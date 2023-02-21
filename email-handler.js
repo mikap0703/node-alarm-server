@@ -2,6 +2,7 @@ const Imap = require('imap');
 const simpleParser = require('mailparser').simpleParser;
 
 require('dotenv').config();
+
 class MailHandler {
     constructor(triggerAlarm, logger) {
         this.connection = new Imap({
@@ -39,12 +40,12 @@ class MailHandler {
             }
             else {
                 console.log("Warten auf neue Mails...");
-                this.connection.on('mail', (numNewMsgs) => {
+                this.connection.on('mail', () => {
                     console.log('Neue Mail! Beginne mit Auswertung...');
                     var f = this.connection.seq.fetch(box.messages.total + ':*', { bodies: '' });
                     f.on('message', (msg, seqno) => {
                         console.log('[MAIL] - ' + seqno);
-                        msg.on('body', (stream, info) => {
+                        msg.on('body', (stream) => {
                             this.evalMail(stream, seqno)
                         });
                     });
@@ -61,7 +62,7 @@ class MailHandler {
         simpleParser(mailStream, async (err, parsed) => {
             const {from, subject, text} = parsed;
             let fromAddr = from.value[0].address;
-            if (fromAddr == process.env.ALARM_RECEIVER) {
+            if (fromAddr == process.env.ALARM_SENDER) {
                 if (subject == process.env.ALARM_SUBJECT) {
                     console.log(`[#${seqno}] Absender (${fromAddr}) und Betreff (${subject}) stimmen überein - Mail #${seqno} wird ausgewertet!`)
                     this.triggerAlarm(this.parseHTML(seqno, text));
@@ -102,10 +103,6 @@ class MailHandler {
                 case 'Notfallgeschehen:':
                     payload['text'] = valueNext;
                     break;
-
-                case 'FL SU 1':
-                case 'FL SU 1/31-1':
-                case 'FL SU 3':
 
                 case 'Strasse / Hs.-Nr.:':
                     payload['address'] = valueNext + ' ' + payload['address'];

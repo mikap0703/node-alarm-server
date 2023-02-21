@@ -12,7 +12,7 @@ function triggerAlarm(payload) {
         ...payload
     })
         .then(function (response) {
-            console.log(response);
+            console.log(response.data.success);
         })
         .catch(function (error) {
             console.log(error);
