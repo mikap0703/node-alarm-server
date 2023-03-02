@@ -4,19 +4,27 @@ const simpleParser = require('mailparser').simpleParser;
 require('dotenv').config();
 
 class MailHandler {
-    constructor(triggerAlarm, logger) {
+    constructor(triggerAlarm, mailConfig, logger) {
         this.connection = new Imap({
-            user: process.env.MAIL_USER,
-            password: process.env.MAIL_PASSWORD,
-            host: process.env.MAIL_HOST,
-            port: process.env.MAIL_PORT,
-            tls: process.env.MAIL_TLS,
+            user: mailConfig.user,
+            password: mailConfig.password,
+            host: mailConfig.host,
+            port:mailConfig.port,
+            tls: mailConfig.tls,
             keepalive: {
                     interval: 3000,
                     idleInterval: 3000,
                     forceNoop: true
             }
         });
+        this.alarmSender = mailConfig.alarmSender
+        this.alarmSubject = mailConfig.alarmSubject
+        this.alarmGroups = mailConfig.alarmGroups
+        switch (mailConfig.mailSchema) {
+            case "SecurCad":
+                this.mailParser = this.parseSecurCad
+                break;
+        }
         this.triggerAlarm = triggerAlarm;
         this.logger = logger;
     }
@@ -24,34 +32,34 @@ class MailHandler {
     startConnection() {
         this.connection.connect();
         this.connection.once('ready', () => {
-            console.log("Login erfolgreich!");
+            this.logger.log('INFO', 'Login erfolgreich!');
             this.openInbox();
         });
 
         this.connection.once('error', (err) => {
-            console.log('Connection error:', err);
+            this.logger.log('ERROR', 'Connection error:', err);
         });
     }
 
     openInbox() {
         this.connection.openBox('INBOX', true, (err, box) => {
             if (err) {
-                console.log('[ERROR] - #%d', err)
+                this.logger.log('ERROR', err)
             }
             else {
-                console.log("Warten auf neue Mails...");
+                this.logger.log('INFO', 'Warten auf neue Mails...');
                 this.connection.on('mail', () => {
-                    console.log('Neue Mail! Beginne mit Auswertung...');
+                    this.logger.log('INFO', 'Neue Mail! Beginne mit Auswertung...');
                     var f = this.connection.seq.fetch(box.messages.total + ':*', { bodies: '' });
                     f.on('message', (msg, seqno) => {
-                        console.log('[MAIL] - ' + seqno);
+                        this.logger.log('INFO', '[MAIL] - ' + seqno);
                         msg.on('body', (stream) => {
                             this.evalMail(stream, seqno)
                         });
                     });
 
                     f.once('error', (err) => {
-                        console.log('[ERROR] - #%d', err)
+                        this.logger.log('ERROR', err)
                     })
                 });
             }
@@ -62,25 +70,29 @@ class MailHandler {
         simpleParser(mailStream, async (err, parsed) => {
             const {from, subject, text} = parsed;
             let fromAddr = from.value[0].address;
-            if (fromAddr == process.env.ALARM_SENDER) {
-                if (subject == process.env.ALARM_SUBJECT) {
-                    console.log(`[#${seqno}] Absender (${fromAddr}) und Betreff (${subject}) stimmen überein - Mail #${seqno} wird ausgewertet!`)
-                    this.triggerAlarm(this.parseHTML(seqno, text));
+            if (fromAddr == this.alarmSender || this.alarmSender == '*') {
+                if (subject == this.alarmSubject || this.alarmSubject == '*') {
+                    this.logger.log('INFO', `[#${seqno}] Absender (${fromAddr}) und Betreff (${subject}) stimmen überein - Mail #${seqno} wird ausgewertet!`)
+                    this.logger.log('INFO', this.triggerAlarm(this.mailParser(seqno, text)));
                 }
                 else {
-                    console.log(`[#${seqno}] Falscher Betreff (${subject}) - Alarm wird nicht ausgelöst`);
+                    this.logger.log('INFO', `[#${seqno}] Falscher Betreff (${subject}) - Alarm wird nicht ausgelöst`);
                 }
             }
             else {
-                console.log(`[#${seqno}] Falscher Absender (${fromAddr}) - Alarm wird nicht ausgelöst`);
+                this.logger.log('INFO', `[#${seqno}] Falscher Absender (${fromAddr}) - Alarm wird nicht ausgelöst`);
             }
         });
     }
 
-    parseHTML(seqno, body) {
-        let payload = {
-            title: process.env.ALARM_DEFAULT_TITLE,
-            address: ""
+    parseSecurCad(seqno, body) {
+        let getNext = (a, i) => {
+            let index = a.indexOf(i);
+            if (index == -1) {
+                return ""
+            } else {
+                return a[index + 1]
+            }
         }
 
         let lines = body.split(/[\r\n\t]+/g);
@@ -92,27 +104,49 @@ class MailHandler {
             }
         }
 
-        for (let [i, v] of cleanedLines.entries()) {
-            let valueNext = cleanedLines[i + 1]
-            switch (v) {
-                case 'Einsatzstichwort:':
-                    payload['title'] = valueNext;
-                    break;
+        let payload = {}
 
-                case 'Sachverhalt:':
-                case 'Notfallgeschehen:':
-                    payload['text'] = valueNext;
-                    break;
+        let stichwort = getNext(cleanedLines, 'Einsatzstichwort:')
+        let sachverhalt = getNext(cleanedLines, 'Sachverhalt:')
+        let notfallgeschehen = getNext(cleanedLines, 'Notfallgeschehen:')
+        let strasse = getNext(cleanedLines, 'Strasse / Hs.-Nr.:')
+        let ort = getNext(cleanedLines, 'PLZ / Ort:')
+        let objekt = getNext(cleanedLines, "Objekt:")
 
-                case 'Strasse / Hs.-Nr.:':
-                    payload['address'] = valueNext + ' ' + payload['address'];
-                    break;
+        payload["groups"] = []
 
-                case 'PLZ / Ort:':
-                    payload['address'] = payload['address'] + valueNext;
-                    break;
+        for (let g in this.alarmGroups) {
+            let groupIndex = cleanedLines.indexOf(g)
+            if (groupIndex != -1) {
+                let v = this.alarmGroups[g]
+                if (v != "") {
+                    payload["groups"].push(v)
+                }
             }
         }
+
+        if (notfallgeschehen != '') {
+            payload['title'] = notfallgeschehen.match(/\((.*?)\)/)[1]
+        } else {
+            if (stichwort != '') payload['title'] = stichwort
+        }
+
+
+
+        payload['text'] = sachverhalt ? (objekt ? sachverhalt + ' - ' + objekt : sachverhalt) : objekt
+
+
+        if (strasse != '') {
+            if (ort != '') {
+                payload['address'] = strasse + ', ' + ort;
+            } else {
+                payload['address'] = strasse
+            }
+        } else {
+            payload['address'] = ort
+        }
+
+        this.logger.log('INFO', payload)
         return payload
     }
 }

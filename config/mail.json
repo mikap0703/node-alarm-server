@@ -1,0 +1,10 @@
+{
+  "user": "E-Mail Addresse",
+  "password": "Passwort für das IMAP Postfach",
+  "host": "URL des IMAP Servers",
+  "port": 0,
+  "tls": true,
+  "alarmSender": "Absender, bei dem der Alarm ausgelöst wird oder *",
+  "alarmSubject": "Betreff bei dem der Alarm ausgelöst wird oder *",
+  "mailSchema": "SecurCad/...",
+}
