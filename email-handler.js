@@ -1,7 +1,8 @@
-const Imap = require('imap');
-const simpleParser = require('mailparser').simpleParser;
+import Imap from "imap";
+import {simpleParser} from "mailparser";
+import {config} from "dotenv";
 
-require('dotenv').config();
+config();
 
 class MailHandler {
     constructor(triggerAlarm, mailConfig, logger) {
@@ -126,7 +127,11 @@ class MailHandler {
         }
 
         if (notfallgeschehen != '') {
-            payload['title'] = notfallgeschehen.match(/\((.*?)\)/)[1]
+            try {
+                payload['title'] = notfallgeschehen.match(/\((.*?)\)/)[1]
+            } catch {
+                payload['title'] = notfallgeschehen
+            }
         } else {
             if (stichwort != '') payload['title'] = stichwort
         }
@@ -151,4 +156,4 @@ class MailHandler {
     }
 }
 
-module.exports = MailHandler;
+export default MailHandler
