@@ -114,9 +114,9 @@ class MailHandler {
         let ort = getNext(cleanedLines, 'PLZ / Ort:')
         let objekt = getNext(cleanedLines, "Objekt:")
 
+        /*
         payload["groups"] = []
 
-        /*
         for (let g in this.alarmGroups) {
             let groupIndex = cleanedLines.indexOf(g)
             if (groupIndex != -1) {
