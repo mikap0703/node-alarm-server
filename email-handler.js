@@ -33,7 +33,7 @@ class MailHandler {
     startConnection() {
         this.connection.connect();
         this.connection.once('ready', () => {
-            this.logger.log('INFO', 'Login erfolgreich!');
+            this.logger.log('INFO', 'IMAP Login erfolgreich!');
             this.openInbox();
         });
 
@@ -48,7 +48,7 @@ class MailHandler {
                 this.logger.log('ERROR', err)
             }
             else {
-                this.logger.log('INFO', 'Warten auf neue Mails...');
+                this.logger.log('INFO', `Warten auf neue Mails von ${this.alarmSender} mit dem Betreff ${this.alarmSubject}`)
                 this.connection.on('mail', () => {
                     this.logger.log('INFO', 'Neue Mail! Beginne mit Auswertung...');
                     var f = this.connection.seq.fetch(box.messages.total + ':*', { bodies: '' });
@@ -74,7 +74,7 @@ class MailHandler {
             if (fromAddr == this.alarmSender || this.alarmSender == '*') {
                 if (subject == this.alarmSubject || this.alarmSubject == '*') {
                     this.logger.log('INFO', `[#${seqno}] Absender (${fromAddr}) und Betreff (${subject}) stimmen überein - Mail #${seqno} wird ausgewertet!`)
-                    this.logger.log('INFO', this.triggerAlarm(this.mailParser(seqno, text)));
+                    this.triggerAlarm(this.mailParser(seqno, text));
                 }
                 else {
                     this.logger.log('INFO', `[#${seqno}] Falscher Betreff (${subject}) - Alarm wird nicht ausgelöst`);
@@ -116,6 +116,7 @@ class MailHandler {
 
         payload["groups"] = []
 
+        /*
         for (let g in this.alarmGroups) {
             let groupIndex = cleanedLines.indexOf(g)
             if (groupIndex != -1) {
@@ -125,6 +126,7 @@ class MailHandler {
                 }
             }
         }
+        */
 
         if (notfallgeschehen != '') {
             try {
@@ -151,7 +153,7 @@ class MailHandler {
             payload['address'] = ort
         }
 
-        this.logger.log('INFO', payload)
+        this.logger.log('INFO', this.logger.convertObject(payload))
         return payload
     }
 }

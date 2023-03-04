@@ -76,7 +76,7 @@ class AlarmHandler {
 
         if (generalConfig.mail) {
             let mail = new MailHandler(this.handleAlarm, mailConfig, this.logger)
-            //mail.startConnection()
+            mail.startConnection()
         }
         if (generalConfig.serial_dme) {
             // TODO: Serielle Auswertung
@@ -90,39 +90,6 @@ class AlarmHandler {
         } else {
             this.triggerAlarm(alarmInfo)
         }
-    }
-
-    triggerDivera(alarmInfo) {
-        if (!this.doTriggerAlarm) return "Alarm nicht ausgelöst"
-        axios.post('https://app.divera247.com/api/alarm', {
-            accesskey: this.api-key,
-            group_ids: [109023], // TEST-GRUPPE
-            title: alarmInfo.title,
-            text: alarmInfo.text,
-            address: alarmInfo.address
-        })
-            .then(function (response) {
-                this.logger.log('INFO', this.logger.convertObject(response.data.success));
-            })
-            .catch(function (error) {
-                this.logger.log('ERROR', error);
-            });
-    }
-
-    triggerAlamos(alarmInfo) {
-        if (!this.doTriggerAlarm) return "Alarm nicht ausgelöst"
-        axios.post('https://app.divera247.com/api/alarm', {
-            //accesskey: process.env.API_KEY,
-            title: alarmInfo.title,
-            message: alarmInfo.text,
-            address: alarmInfo.address
-        })
-            .then(function (response) {
-                this.logger.log('INFO', this.logger.convertObject(response.data.success));
-            })
-            .catch(function (error) {
-                this.logger.log('ERROR', error);
-            });
     }
 }
 
@@ -163,6 +130,21 @@ class DiveraHandler {
             }
         })
     }
+}
+
+class AlamosHandler {
+    constructor(apiKey, logger) {
+        this.apikey = apiKey
+        this.logger = logger
+
+        this.logger.log('ERROR', 'Alamos Anbindung ist nicht implementiert')
+    }
+
+    triggerAlarm(alarmInfo) {
+        this.logger.log('ERROR', 'Alamos Anbindung ist nicht implementiert')
+    }
+
+
 }
 
 let alarmhandler = new AlarmHandler()
