@@ -21,6 +21,9 @@ class MailHandler {
         this.alarmSender = mailConfig.alarmSender
         this.alarmSubject = mailConfig.alarmSubject
         this.alarmGroups = mailConfig.alarmGroups
+        this.alarmVehicles = mailConfig.alarmVehicles
+        this.alarmMembers = mailConfig.alarmMembers
+
         switch (mailConfig.mailSchema) {
             case "SecurCad":
                 this.mailParser = this.parseSecurCad
@@ -105,28 +108,30 @@ class MailHandler {
             }
         }
 
-        let payload = {}
+        // TODO Payload aktualisieren
+        let payload = {
+            "id": "",
+            "title": "",
+            "text": "",
+            "address": {
+                "street": "",
+                "city": "",
+                "object": ""
+            },
+            "groups": [],
+            "vehicles": [],
+            "members": []
+        }
 
+        // Einsatznummer - ID
+        let einsatznummer = getNext(cleanedLines, 'Einsatznummer:')
+        payload['id'] = einsatznummer.toString()
+
+        // Stichwort, Text und Einsatzobjekt
         let stichwort = getNext(cleanedLines, 'Einsatzstichwort:')
         let sachverhalt = getNext(cleanedLines, 'Sachverhalt:')
         let notfallgeschehen = getNext(cleanedLines, 'Notfallgeschehen:')
-        let strasse = getNext(cleanedLines, 'Strasse / Hs.-Nr.:')
-        let ort = getNext(cleanedLines, 'PLZ / Ort:')
         let objekt = getNext(cleanedLines, "Objekt:")
-
-        /*
-        payload["groups"] = []
-
-        for (let g in this.alarmGroups) {
-            let groupIndex = cleanedLines.indexOf(g)
-            if (groupIndex != -1) {
-                let v = this.alarmGroups[g]
-                if (v != "") {
-                    payload["groups"].push(v)
-                }
-            }
-        }
-        */
 
         if (notfallgeschehen != '') {
             try {
@@ -138,10 +143,11 @@ class MailHandler {
             if (stichwort != '') payload['title'] = stichwort
         }
 
-
-
         payload['text'] = sachverhalt ? (objekt ? sachverhalt + ' - ' + objekt : sachverhalt) : objekt
 
+        // Adresse
+        let strasse = getNext(cleanedLines, 'Strasse / Hs.-Nr.:')
+        let ort = getNext(cleanedLines, 'PLZ / Ort:')
 
         if (strasse != '') {
             if (ort != '') {
@@ -151,6 +157,37 @@ class MailHandler {
             }
         } else {
             payload['address'] = ort
+        }
+
+        // Empfängergruppen und alarmierte Fahrzeuge
+        for (let g in this.alarmGroups) {
+            let groupIndex = cleanedLines.indexOf(g)
+            if (groupIndex != -1) {
+                let v = this.alarmGroups[g]
+                if (v != "") {
+                    payload["groups"].push(v)
+                }
+            }
+        }
+
+        for (let g in this.alarmVehicles) {
+            let groupIndex = cleanedLines.indexOf(g)
+            if (groupIndex != -1) {
+                let v = this.alarmVehicles[g]
+                if (v != "") {
+                    payload["vehicles"].push(v)
+                }
+            }
+        }
+
+        for (let g in this.alarmMembers) {
+            let groupIndex = cleanedLines.indexOf(g)
+            if (groupIndex != -1) {
+                let v = this.alarmMembers[g]
+                if (v != "") {
+                    payload["members"].push(v)
+                }
+            }
         }
 
         this.logger.log('INFO', this.logger.convertObject(payload))
