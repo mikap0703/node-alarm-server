@@ -108,7 +108,6 @@ class MailHandler {
             }
         }
 
-        // TODO Payload aktualisieren
         let payload = {
             "id": "",
             "title": "",
@@ -146,18 +145,9 @@ class MailHandler {
         payload['text'] = sachverhalt ? (objekt ? sachverhalt + ' - ' + objekt : sachverhalt) : objekt
 
         // Adresse
-        let strasse = getNext(cleanedLines, 'Strasse / Hs.-Nr.:')
-        let ort = getNext(cleanedLines, 'PLZ / Ort:')
-
-        if (strasse != '') {
-            if (ort != '') {
-                payload['address'] = strasse + ', ' + ort;
-            } else {
-                payload['address'] = strasse
-            }
-        } else {
-            payload['address'] = ort
-        }
+        payload.address.street = getNext(cleanedLines, 'Strasse / Hs.-Nr.:')
+        payload.address.city = getNext(cleanedLines, 'PLZ / Ort:')
+        payload.address.object = objekt
 
         // Empfängergruppen und alarmierte Fahrzeuge
         for (let g in this.alarmGroups) {
