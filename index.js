@@ -64,7 +64,7 @@ class AlarmHandler {
         this.apiKey = generalConfig.apiKey
         switch (generalConfig.api) {
             case "Divera":
-                let divera = new DiveraHandler(this.apiKey, this.logger)
+                let divera = new DiveraHandler(this.apiKey, this.logger, generalConfig)
                 this.triggerAlarm = divera.triggerAlarm.bind(divera)
                 break;
             case "Alamos":
