@@ -7,15 +7,15 @@
   "alarmSender": "Absender, bei dem der Alarm ausgelöst wird oder *",
   "alarmSubject": "Betreff bei dem der Alarm ausgelöst wird oder *",
   "alarmGroups": {
-    "Key": "Value",
-    "Key2": "Value2"
+    "FW Musterstadt Vollalarm": "Mannschaft Gruppe",
+    "FW Musterstadt DLK": "DLK Gruppe"
   },
   "alarmVehicles": {
-    "FW SU4 Vollalarm": ["FL SU 4/45", "FL SU 4/42", "FL SU 4/18"]
+    "FW Musterstadt Vollalarm": ["FL MS 1/10", "FL MS 1/31", "FL MS 1/46"]
   },
   "alarmMembers": {
-    "Key": "Value",
-    "Key2": "Value2"
+    "FW Musterstadt Wehrführung": "WehrführerID",
+    "FW Musterstadt LB Führung": "LBFührungID"
   },
-  "mailSchema": "SecurCad/...",
+  "mailSchema": "SecurCad/..."
 }
