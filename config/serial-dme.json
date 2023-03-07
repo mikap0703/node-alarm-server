@@ -1,4 +1,5 @@
 {
+  "comPort": "COM1",
   "rics": [
     {
       "4711": "group4711"

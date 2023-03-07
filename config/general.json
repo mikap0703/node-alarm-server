@@ -4,5 +4,8 @@
   "serial-dme": false,
   "mail": false,
   "alarm": false,
-  "defaultAlarmTitle": "Einsatz"
+  "defaultAlarmTitle": "Einsatz",
+  "diveraSettings": {
+    "notificationType": "3"
+  }
 }
