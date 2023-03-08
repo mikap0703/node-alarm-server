@@ -13,8 +13,8 @@ class MailHandler {
             port:mailConfig.port,
             tls: mailConfig.tls,
             keepalive: {
-                    interval: 3000,
-                    idleInterval: 3000,
+                    interval: 2000,
+                    idleInterval: 2000,
                     forceNoop: true
             }
         });
@@ -58,7 +58,14 @@ class MailHandler {
                     f.on('message', (msg, seqno) => {
                         this.logger.log('INFO', '[MAIL] - ' + seqno);
                         msg.on('body', (stream) => {
-                            this.evalMail(stream, seqno)
+                            var buffer = '';
+                            stream.on('data', (chunk) => {
+                                buffer += chunk.toString('utf8');
+                            });
+                            stream.once('end', () => {
+                                console.log(buffer)
+                                this.evalMail(buffer, seqno)
+                            });
                         });
                     });
 
@@ -70,30 +77,35 @@ class MailHandler {
         });
     }
 
-    evalMail(mailStream, seqno) {
-        simpleParser(mailStream, async (err, parsed) => {
-            const {from, subject, text} = parsed;
-            let fromAddr = from.value[0].address;
-            if (fromAddr == this.alarmSender || this.alarmSender == '*') {
-                if (subject == this.alarmSubject || this.alarmSubject == '*') {
-                    this.logger.log('INFO', `[#${seqno}] Absender (${fromAddr}) und Betreff (${subject}) stimmen überein - Mail #${seqno} wird ausgewertet!`)
-                    this.triggerAlarm(this.mailParser(seqno, text));
+    evalMail(mail, seqno) {
+        simpleParser(mail)
+            .then(parsed => {
+                const {from, subject, text} = parsed;
+                let fromAddr = from.value[0].address;
+                if (fromAddr == this.alarmSender || this.alarmSender == '*') {
+                    if (subject == this.alarmSubject || this.alarmSubject == '*') {
+                        this.logger.log('INFO', `[#${seqno}] Absender (${fromAddr}) und Betreff (${subject}) stimmen überein - Mail #${seqno} wird ausgewertet!`)
+                        this.triggerAlarm(this.mailParser(seqno, text));
+                    }
+                    else {
+                        this.logger.log('INFO', `[#${seqno}] Falscher Betreff (${subject}) - Alarm wird nicht ausgelöst`);
+                    }
                 }
                 else {
-                    this.logger.log('INFO', `[#${seqno}] Falscher Betreff (${subject}) - Alarm wird nicht ausgelöst`);
+                    this.logger.log('INFO', `[#${seqno}] Falscher Absender (${fromAddr}) - Alarm wird nicht ausgelöst`);
                 }
-            }
-            else {
-                this.logger.log('INFO', `[#${seqno}] Falscher Absender (${fromAddr}) - Alarm wird nicht ausgelöst`);
-            }
-        });
+            })
+            .catch(err => {
+                this.logger.log('ERROR', `[#${seqno}] Fehler beim Parsen:`);
+                this.logger.log('ERROR', this.logger.convertObject(err))
+            });
     }
 
     parseSecurCad(seqno, body) {
         let getNext = (a, i) => {
             let index = a.indexOf(i);
             if (index == -1) {
-                return ""
+                return ''
             } else {
                 return a[index + 1]
             }
@@ -107,6 +119,8 @@ class MailHandler {
                 cleanedLines.push(line)
             }
         }
+
+        console.log(cleanedLines)
 
         let payload = {
             "id": "",
@@ -146,6 +160,9 @@ class MailHandler {
 
         // Adresse
         payload.address.street = getNext(cleanedLines, 'Strasse / Hs.-Nr.:')
+        if (payload.address.street == '') {
+            payload.address.street = getNext(cleanedLines, 'Strasse:')
+        }
         payload.address.city = getNext(cleanedLines, 'PLZ / Ort:')
         payload.address.object = objekt
 
