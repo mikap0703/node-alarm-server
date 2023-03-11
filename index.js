@@ -4,15 +4,14 @@ import {config} from "dotenv";
 config();
 import fs from "fs";
 import chalk from 'chalk';
-import axios from "axios";
 import MailHandler from "./email-handler.js";
 import {DiveraHandler, AlamosHandler} from './apiHandler.js';
-
 class Logger {
-    constructor() {
+    constructor(__dirname) {
+        this.logDir = path.join(__dirname, 'logs');
     }
 
-    log (type, msg) {
+    log (type, payload) {
         let doLog = chalk.red
         switch (type) {
             case 'INFO':
@@ -23,8 +22,9 @@ class Logger {
                 break
             case 'ERROR':
                 doLog = chalk.bold.yellow
+                break
         }
-        console.log(doLog(`[${type}] - ${msg}`))
+        console.log(doLog(`[${type}] - ${payload}`))
     }
 
     convertObject (o) {
@@ -34,12 +34,12 @@ class Logger {
 
 class AlarmHandler {
     constructor() {
-        this.logger = new Logger()
         // Konfiguration laden
         const __filename = fileURLToPath(import.meta.url);
         const __dirname = path.dirname(__filename);
         console.log(__dirname)
 
+        this.logger = new Logger(__dirname)
         const configFolder = process.env.DEV_CONFIG_PATH || './config';
         const configDir = path.join(__dirname, configFolder);
 
