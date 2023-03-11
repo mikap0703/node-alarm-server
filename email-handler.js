@@ -1,6 +1,7 @@
 import Imap from "imap";
-import {simpleParser} from "mailparser";
+import {simpleParser, MailParser} from "mailparser";
 import {config} from "dotenv";
+import {JSDOM} from "jsdom";
 
 config();
 
@@ -50,11 +51,41 @@ class MailHandler {
             if (err) {
                 this.logger.log('ERROR', err)
             }
+            else if (process.env.DEV_MODE == 1) { // DEV
+                this.logger.log('WARN', 'ACHTUNG - DEV-Modus aktiviert')
+                var f = this.connection.seq.fetch('370:*', {
+                    bodies: '',
+                    struct: true
+                })
+
+                this.logger.log('INFO', `Warten auf neue Mails von ${this.alarmSender} mit dem Betreff ${this.alarmSubject}`)
+
+                f.on('message', (msg, seqno) => {
+                    this.logger.log('INFO', '[MAIL] - ' + seqno);
+                    msg.on('body', (stream) => {
+                        var buffer = '';
+                        stream.on('data', (chunk) => {
+                            buffer += chunk.toString('utf8');
+                        });
+                        stream.once('end', () => {
+                            this.evalMail(buffer, seqno)
+                        });
+                    });
+
+                    msg.once('attributes', function (attrs) {
+                        // console.log('Attributes: %s', inspect(attrs, false, 8));
+                    });
+                });
+
+            }
+
             else {
                 this.logger.log('INFO', `Warten auf neue Mails von ${this.alarmSender} mit dem Betreff ${this.alarmSubject}`)
+
                 this.connection.on('mail', () => {
                     this.logger.log('INFO', 'Neue Mail! Beginne mit Auswertung...');
-                    var f = this.connection.seq.fetch(box.messages.total + ':*', { bodies: '' });
+                    var f = this.connection.seq.fetch(box.messages.total + ':*', { bodies: '', struct: true });
+
                     f.on('message', (msg, seqno) => {
                         this.logger.log('INFO', '[MAIL] - ' + seqno);
                         msg.on('body', (stream) => {
@@ -63,7 +94,6 @@ class MailHandler {
                                 buffer += chunk.toString('utf8');
                             });
                             stream.once('end', () => {
-                                console.log(buffer)
                                 this.evalMail(buffer, seqno)
                             });
                         });
@@ -80,12 +110,12 @@ class MailHandler {
     evalMail(mail, seqno) {
         simpleParser(mail)
             .then(parsed => {
-                const {from, subject, text} = parsed;
+                const {from, subject, text, html} = parsed;
                 let fromAddr = from.value[0].address;
                 if (fromAddr == this.alarmSender || this.alarmSender == '*') {
                     if (subject == this.alarmSubject || this.alarmSubject == '*') {
                         this.logger.log('INFO', `[#${seqno}] Absender (${fromAddr}) und Betreff (${subject}) stimmen überein - Mail #${seqno} wird ausgewertet!`)
-                        this.triggerAlarm(this.mailParser(seqno, text));
+                        this.triggerAlarm(this.mailParser(seqno, text, html));
                     }
                     else {
                         this.logger.log('INFO', `[#${seqno}] Falscher Betreff (${subject}) - Alarm wird nicht ausgelöst`);
@@ -101,26 +131,34 @@ class MailHandler {
             });
     }
 
-    parseSecurCad(seqno, body) {
-        let getNext = (a, i) => {
-            let index = a.indexOf(i);
-            if (index == -1) {
-                return ''
-            } else {
-                return a[index + 1]
-            }
-        }
+    parseSecurCad(seqno, text, html) {
+        const extractTableData = (htmlString) => {
+            const dom = new JSDOM(htmlString);
+            const tables = dom.window.document.getElementsByTagName("table");
+            const result = {};
 
-        let lines = body.split(/[\r\n\t]+/g);
-        let cleanedLines = [];
-        for (let line of lines) {
-            line = line.trim();
-            if (line.length > 0) {
-                cleanedLines.push(line)
-            }
-        }
+            for (let i = 0; i < tables.length; i++) {
+                const table = tables[i];
+                const rows = table.rows;
 
-        console.log(cleanedLines)
+                for (let j = 0; j < rows.length; j++) {
+                    const row = rows[j];
+                    const rowData = [];
+
+                    for (let k = 1; k < row.cells.length; k++) {
+                        const cell = row.cells[k];
+                        rowData.push(cell.innerHTML.replace(/(&\w+;)|([\r\n\t]+)/g, '').trim());
+                    }
+
+                    const key = row.cells[0].textContent.trim();
+                    result[key] = rowData;
+                }
+            }
+
+            return result;
+        };
+
+        const tableData = extractTableData(html)
 
         let payload = {
             "id": "",
@@ -137,14 +175,16 @@ class MailHandler {
         }
 
         // Einsatznummer - ID
-        let einsatznummer = getNext(cleanedLines, 'Einsatznummer:')
+        let einsatznummer = tableData['Einsatznummer:']?.[0] || ''
         payload['id'] = einsatznummer.toString()
 
         // Stichwort, Text und Einsatzobjekt
-        let stichwort = getNext(cleanedLines, 'Einsatzstichwort:')
-        let sachverhalt = getNext(cleanedLines, 'Sachverhalt:')
-        let notfallgeschehen = getNext(cleanedLines, 'Notfallgeschehen:')
-        let objekt = getNext(cleanedLines, "Objekt:")
+        let stichwort = tableData['Einsatzstichwort:']?.[0] || ''
+        let sachverhalt = tableData['Sachverhalt:']?.[0] || ''
+        let notfallgeschehen = tableData['Notfallgeschehen:']?.[0] || ''
+
+        let objekt = tableData['Objekt:']?.[0] || ''
+        payload.address.object = objekt
 
         if (notfallgeschehen != '') {
             try {
@@ -153,49 +193,36 @@ class MailHandler {
                 payload['title'] = notfallgeschehen
             }
         } else {
-            if (stichwort != '') payload['title'] = stichwort
+            if (stichwort) payload['title'] = stichwort
         }
 
         payload['text'] = sachverhalt ? (objekt ? sachverhalt + ' - ' + objekt : sachverhalt) : objekt
 
         // Adresse
-        payload.address.street = getNext(cleanedLines, 'Strasse / Hs.-Nr.:')
+        payload.address.street = tableData['Strasse / Hs.-Nr.:']?.[0] || ''
         if (payload.address.street == '') {
-            payload.address.street = getNext(cleanedLines, 'Strasse:')
+            payload.address.street = tableData['Strasse:']?.[0] || ''
         }
-        payload.address.city = getNext(cleanedLines, 'PLZ / Ort:')
-        payload.address.object = objekt
+        payload.address.city = tableData['PLZ / Ort:']?.[0] || ''
 
         // Empfängergruppen und alarmierte Fahrzeuge
-        for (let g in this.alarmGroups) {
-            let groupIndex = cleanedLines.indexOf(g)
-            if (groupIndex != -1) {
-                let v = this.alarmGroups[g]
-                if (v != "") {
-                    payload["groups"].push(v)
+
+        const addToPayload = (property, payloadProperty) => {
+            for (let g in this[property]) {
+                if (tableData[g]) {
+                    let v = this[property][g];
+                    if (Array.isArray(v)) {
+                        payload[payloadProperty].push(...v);
+                    } else {
+                        payload[payloadProperty].push(v);
+                    }
                 }
             }
         }
 
-        for (let g in this.alarmVehicles) {
-            let groupIndex = cleanedLines.indexOf(g)
-            if (groupIndex != -1) {
-                let v = this.alarmVehicles[g]
-                if (v != "") {
-                    payload["vehicles"].push(v)
-                }
-            }
-        }
-
-        for (let g in this.alarmMembers) {
-            let groupIndex = cleanedLines.indexOf(g)
-            if (groupIndex != -1) {
-                let v = this.alarmMembers[g]
-                if (v != "") {
-                    payload["members"].push(v)
-                }
-            }
-        }
+        addToPayload("alarmGroups", "groups");
+        addToPayload("alarmVehicles", "vehicles");
+        addToPayload("alarmMembers", "members");
 
         this.logger.log('INFO', this.logger.convertObject(payload))
         return payload
