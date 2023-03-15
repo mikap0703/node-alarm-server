@@ -1,7 +1,7 @@
 {
   "api": "Divera/Alamos/...",
   "apiKey": "asdf1234",
-  "serial-dme": false,
+  "serialDME": false,
   "mail": false,
   "alarm": false,
   "defaultAlarmTitle": "Einsatz",
