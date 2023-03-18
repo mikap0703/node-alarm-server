@@ -158,7 +158,7 @@ class MailHandler {
             return result;
         };
 
-        const tableData = extractTableData(html)
+        const tableData = extractTableData(html + text)
 
         let payload = {
             "id": "",
@@ -206,8 +206,7 @@ class MailHandler {
         payload.address.city = tableData['PLZ / Ort:']?.[0] || ''
 
         // Empfängergruppen und alarmierte Fahrzeuge
-
-        const addToPayload = (property, payloadProperty) => {
+        const addAlarmUnits = (property, payloadProperty) => {
             for (let g in this[property]) {
                 if (tableData[g]) {
                     let v = this[property][g];
@@ -218,11 +217,12 @@ class MailHandler {
                     }
                 }
             }
+            payload[payloadProperty] = [...new Set(payload[payloadProperty])]
         }
 
-        addToPayload("alarmGroups", "groups");
-        addToPayload("alarmVehicles", "vehicles");
-        addToPayload("alarmMembers", "members");
+        addAlarmUnits("alarmGroups", "groups");
+        addAlarmUnits("alarmVehicles", "vehicles");
+        addAlarmUnits("alarmMembers", "members");
 
         this.logger.log('INFO', this.logger.convertObject(payload))
         return payload
