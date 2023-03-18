@@ -6,6 +6,8 @@ import fs from "fs";
 import chalk from 'chalk';
 import MailHandler from "./email-handler.js";
 import {DiveraHandler, AlamosHandler} from './apiHandler.js';
+import configChecker from "./config.js";
+
 class Logger {
     constructor(__dirname) {
         this.logDir = path.join(__dirname, 'logs');
@@ -36,24 +38,17 @@ class AlarmHandler {
     constructor() {
         // Konfiguration laden
         const __filename = fileURLToPath(import.meta.url);
-        const __dirname = path.dirname(__filename);
-        console.log(__dirname)
+        this.dirname = path.dirname(__filename);
 
-        this.logger = new Logger(__dirname)
-        const configFolder = process.env.DEV_CONFIG_PATH || './config';
-        const configDir = path.join(__dirname, configFolder);
+        this.logger = new Logger(this.dirname)
 
-        const mailConfigPath = path.join(configDir, 'mail.json');
-        const mailConfig = JSON.parse(fs.readFileSync(mailConfigPath));
+        this.configChecker = new configChecker();
+    }
 
-        const serialDmeConfigPath = path.join(configDir, 'serial-dme.json');
-        const serialDmeConfig = JSON.parse(fs.readFileSync(serialDmeConfigPath));
+    async start() {
+        await this.loadConfig()
 
-        const generalConfigPath = path.join(configDir, 'general.json');
-        const generalConfig = JSON.parse(fs.readFileSync(generalConfigPath));
-
-        this.logger.log('INFO', 'Konfiguration ' + configDir + ' wurde geladen...')
-        this.doTriggerAlarm = generalConfig.alarm
+        this.doTriggerAlarm = this.config.general.alarm
 
         if (this.doTriggerAlarm) {
             this.logger.log('INFO', 'Alarmierung aktiv - Einkommende Alarmierungen werden sofort weitergeleitet!')
@@ -61,10 +56,10 @@ class AlarmHandler {
             this.logger.log('WARN', 'Alarmierung nicht aktiv - Einkommende Alarmierungen werden nicht weitergeleitet!')
         }
 
-        this.apiKey = generalConfig.apiKey
-        switch (generalConfig.api) {
+        this.apiKey = this.config.general.apiKey
+        switch (this.config.general.api) {
             case "Divera":
-                let divera = new DiveraHandler(this.apiKey, this.logger, generalConfig)
+                let divera = new DiveraHandler(this.apiKey, this.logger, this.config.general)
                 this.triggerAlarm = divera.triggerAlarm.bind(divera)
                 break;
             case "Alamos":
@@ -72,14 +67,34 @@ class AlarmHandler {
                 break;
         }
 
-        if (generalConfig.mail) {
-            let mail = new MailHandler(this.handleAlarm.bind(this), mailConfig, this.logger)
+        if (this.config.general.mail) {
+            let mail = new MailHandler(this.handleAlarm.bind(this), this.config.mail, this.logger)
             mail.startConnection()
         }
-        if (generalConfig.serial_dme) {
+        if (this.config.general.serial_dme) {
             // TODO: Serielle Auswertung
             this.logger.log('WARN', 'SERIAL DME - Auswertung noch nicht implementiert')
         }
+    }
+
+    async loadConfig() {
+        const configFolder = process.env.DEV_CONFIG_PATH || './config';
+        const configDir = path.join(this.dirname, configFolder);
+
+        this.configChecker.check(configDir);
+
+        this.config = this.configChecker
+
+        const mailConfigPath = path.join(configDir, 'mail.json');
+        this.config.mail = JSON.parse(fs.readFileSync(mailConfigPath));
+
+        const serialDmeConfigPath = path.join(configDir, 'serial-dme.json');
+        this.config.serialDME = JSON.parse(fs.readFileSync(serialDmeConfigPath));
+
+        const generalConfigPath = path.join(configDir, 'general.json');
+        this.config.general = JSON.parse(fs.readFileSync(generalConfigPath));
+
+        this.logger.log('INFO', 'Konfiguration ' + configDir + ' wurde geladen...')
     }
 
     handleAlarm(alarmInfo) {
@@ -92,4 +107,5 @@ class AlarmHandler {
     }
 }
 
-let alarmhandler = new AlarmHandler()
+let alarmhandler = new AlarmHandler();
+await alarmhandler.start()
