@@ -7,8 +7,8 @@ import {config} from "dotenv";
 config();
 
 export default class configChecker {
-    constructor(configDir) {
-        this.configDir = configDir
+    constructor() {
+        this.configDir = "";
 
         this.generalConfigSchema = yup.object({
             api: yup.string().required().oneOf(['Divera', 'Alamos']),
@@ -21,32 +21,22 @@ export default class configChecker {
         this.mailConfigSchema = yup.object({
             user: yup.string().required().email().trim().lowercase(),
             password: yup.string().required()
-        })
+        });
 
         this.serialDMEConfigSchema = yup.object({
             comPort: yup.string().required(),
             rics: yup.array()
-        })
+        });
     }
 
-    async getConfigs() {
-        const mailConfig = JSON.parse(fs.readFileSync(path.join(this.configDir, 'mail.json')))
-        this.mail = await this.mailConfigSchema.validate(mailConfig)
+    async check(configDir) {
+        const mailConfig = JSON.parse(fs.readFileSync(path.join(configDir, 'mail.json')));
+        this.mail = await this.mailConfigSchema.validate(mailConfig);
 
-        const serialDmeConfig = JSON.parse(fs.readFileSync(path.join(this.configDir, 'serial-dme.json')))
-        this.serialDME = await this.serialDMEConfigSchema.validate(serialDmeConfig)
+        const serialDmeConfig = JSON.parse(fs.readFileSync(path.join(configDir, 'serial-dme.json')));
+        this.serialDME = await this.serialDMEConfigSchema.validate(serialDmeConfig);
 
-        const generalConfig = JSON.parse(fs.readFileSync(path.join(this.configDir, 'general.json')))
-        this.general = await this.generalConfigSchema.validate(generalConfig)
+        const generalConfig = JSON.parse(fs.readFileSync(path.join(configDir, 'general.json')));
+        this.general = await this.generalConfigSchema.validate(generalConfig);
     }
 }
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const configFolder = process.env.DEV_CONFIG_PATH || './config';
-const configDir = path.join(__dirname, configFolder);
-
-let checker = await new configChecker(configDir)
-await checker.getConfigs()
-
-console.log(checker.mail)
