@@ -81,9 +81,9 @@ class AlarmHandler {
         const configFolder = process.env.DEV_CONFIG_PATH || './config';
         const configDir = path.join(this.dirname, configFolder);
 
-        this.configChecker.check(configDir);
+        await this.configChecker.check(configDir);
 
-        this.config = this.configChecker
+        this.config = this.configChecker.config
 
         const mailConfigPath = path.join(configDir, 'mail.json');
         this.config.mail = JSON.parse(fs.readFileSync(mailConfigPath));
