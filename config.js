@@ -9,6 +9,7 @@ config();
 export default class configChecker {
     constructor() {
         this.configDir = "";
+        this.config = {}
 
         this.generalConfigSchema = yup.object({
             api: yup.string().required().oneOf(['Divera', 'Alamos']),
@@ -31,12 +32,12 @@ export default class configChecker {
 
     async check(configDir) {
         const mailConfig = JSON.parse(fs.readFileSync(path.join(configDir, 'mail.json')));
-        this.mail = await this.mailConfigSchema.validate(mailConfig);
+        this.config.mail = await this.mailConfigSchema.validate(mailConfig);
 
         const serialDmeConfig = JSON.parse(fs.readFileSync(path.join(configDir, 'serial-dme.json')));
-        this.serialDME = await this.serialDMEConfigSchema.validate(serialDmeConfig);
+        this.config.serialDME = await this.serialDMEConfigSchema.validate(serialDmeConfig);
 
         const generalConfig = JSON.parse(fs.readFileSync(path.join(configDir, 'general.json')));
-        this.general = await this.generalConfigSchema.validate(generalConfig);
+        this.config.general = await this.generalConfigSchema.validate(generalConfig);
     }
 }
