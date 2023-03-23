@@ -34,7 +34,7 @@ class MailHandler {
         this.logger = logger;
     }
 
-    startConnection() {
+    start() {
         this.connection.connect();
         this.connection.once('ready', () => {
             this.logger.log('INFO', 'IMAP Login erfolgreich!');
