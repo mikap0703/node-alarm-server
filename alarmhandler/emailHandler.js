@@ -19,11 +19,14 @@ class MailHandler {
                     forceNoop: true
             }
         });
-        this.alarmSender = mailConfig.alarmSender
-        this.alarmSubject = mailConfig.alarmSubject
-        this.alarmGroups = mailConfig.alarmGroups
-        this.alarmVehicles = mailConfig.alarmVehicles
-        this.alarmMembers = mailConfig.alarmMembers
+
+        this.maxAge = mailConfig.maxAge;
+        this.alarmSender = mailConfig.alarmSender;
+        this.alarmSubject = mailConfig.alarmSubject;
+        this.alarmGroups = mailConfig.alarmGroups;
+        this.alarmVehicles = mailConfig.alarmVehicles;
+        this.alarmMembers = mailConfig.alarmMembers;
+        this.stichwoerter = mailConfig.stichwoerter;
 
         switch (mailConfig.mailSchema) {
             case "SecurCad":
@@ -107,15 +110,25 @@ class MailHandler {
     evalMail(mail, seqno) {
         simpleParser(mail)
             .then(parsed => {
-                const {from, subject, text, html} = parsed;
+                const {from, subject, text, html, date} = parsed;
                 let fromAddr = from.value[0].address;
-                if (fromAddr == this.alarmSender || this.alarmSender == '*') {
-                    if (subject == this.alarmSubject || this.alarmSubject == '*') {
-                        this.logger.log('INFO', `[#${seqno}] Absender (${fromAddr}) und Betreff (${subject}) stimmen überein - Mail #${seqno} wird ausgewertet!`)
-                        this.triggerAlarm(this.mailParser(seqno, text, html));
+
+                let mailDate = new Date(date);
+                if ((Date.now() - mailDate / 1000) > this.maxAge) {
+                    this.logger.log('INFO', `[#${seqno}] Mail zu alt (${mailDate.toLocaleDateString()}) - Alarm wird nicht ausgelöst`);
+                }
+                else {
+                    if (fromAddr == this.alarmSender || this.alarmSender == '*') {
+                        if (subject == this.alarmSubject || this.alarmSubject == '*') {
+                            this.logger.log('INFO', `[#${seqno}] Absender (${fromAddr}) und Betreff (${subject}) stimmen überein - Mail #${seqno} wird ausgewertet!`)
+                            this.triggerAlarm(this.mailParser(seqno, text, html));
+                        }
+                        else {
+                            this.logger.log('INFO', `[#${seqno}] Falscher Betreff (${subject}) - Alarm wird nicht ausgelöst`);
+                        }
                     }
                     else {
-                        this.logger.log('INFO', `[#${seqno}] Falscher Betreff (${subject}) - Alarm wird nicht ausgelöst`);
+                        this.logger.log('INFO', `[#${seqno}] Falscher Absender (${fromAddr}) - Alarm wird nicht ausgelöst`);
                     }
                 }
             })
