@@ -2,21 +2,23 @@ import AlarmHandler from "./alarmhandler/alarmhandler.js";
 import express from "express";
 import {fileURLToPath} from "url";
 import path from "path";
-
+import configChecker from "./config.js";
+import Logger from "./logger.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(__filename);
+const configFolder = process.env.DEV_CONFIG_PATH || './config';
+const configDir = path.join(dirname, configFolder);
 
-let alarmhandler = new AlarmHandler(dirname);
+const configs = new configChecker();
+await configs.check(configDir);
 
-await alarmhandler.start()
-    .then(() => {
-        startWebUI();
-    })
-    .catch((error) => {
-        console.error('Error starting alarm:', error);
-    });
+const config = configs;
 
+const logger = new Logger(dirname)
+
+let alarmhandler = new AlarmHandler(config.config, logger);
+alarmhandler.start()
 
 function startWebUI () {
     const app = express();
