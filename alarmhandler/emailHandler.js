@@ -1,5 +1,5 @@
 import Imap from "imap";
-import {simpleParser, MailParser} from "mailparser";
+import {simpleParser} from "mailparser";
 import {config} from "dotenv";
 import {JSDOM} from "jsdom";
 
@@ -27,7 +27,7 @@ class MailHandler {
 
         switch (mailConfig.mailSchema) {
             case "SecurCad":
-                this.mailParser = this.parseSecurCad
+                this.mailParser = this.parseSecurCad;
                 break;
         }
         this.triggerAlarm = triggerAlarm;
@@ -49,16 +49,13 @@ class MailHandler {
     openInbox() {
         this.connection.openBox('INBOX', true, (err, box) => {
             if (err) {
-                this.logger.log('ERROR', err)
+                this.logger.log('ERROR', err);
             }
             else if (process.env.DEV_MODE == 1) { // DEV
-                this.logger.log('WARN', 'ACHTUNG - DEV-Modus aktiviert')
-                var f = this.connection.seq.fetch('370:*', {
-                    bodies: '',
-                    struct: true
-                })
+                this.logger.log('WARN', 'ACHTUNG - DEV-Modus aktiviert');
+                var f = this.connection.seq.fetch((box.messages.total - 5) + ':*', { bodies: '', struct: true });
 
-                this.logger.log('INFO', `Warten auf neue Mails von ${this.alarmSender} mit dem Betreff ${this.alarmSubject}`)
+                this.logger.log('INFO', `Warten auf neue Mails von ${this.alarmSender} mit dem Betreff ${this.alarmSubject}`);
 
                 f.on('message', (msg, seqno) => {
                     this.logger.log('INFO', '[MAIL] - ' + seqno);
@@ -68,19 +65,19 @@ class MailHandler {
                             buffer += chunk.toString('utf8');
                         });
                         stream.once('end', () => {
-                            this.evalMail(buffer, seqno)
+                            this.evalMail(buffer, seqno);
                         });
                     });
+                });
 
-                    msg.once('attributes', function (attrs) {
-                        // console.log('Attributes: %s', inspect(attrs, false, 8));
-                    });
+                f.once('error', (err) => {
+                    this.logger.log('ERROR', err);
                 });
 
             }
 
             else {
-                this.logger.log('INFO', `Warten auf neue Mails von ${this.alarmSender} mit dem Betreff ${this.alarmSubject}`)
+                this.logger.log('INFO', `Warten auf neue Mails von ${this.alarmSender} mit dem Betreff ${this.alarmSubject}`);
 
                 this.connection.on('mail', () => {
                     this.logger.log('INFO', 'Neue Mail! Beginne mit Auswertung...');
@@ -94,14 +91,14 @@ class MailHandler {
                                 buffer += chunk.toString('utf8');
                             });
                             stream.once('end', () => {
-                                this.evalMail(buffer, seqno)
+                                this.evalMail(buffer, seqno);
                             });
                         });
                     });
 
                     f.once('error', (err) => {
-                        this.logger.log('ERROR', err)
-                    })
+                        this.logger.log('ERROR', err);
+                    });
                 });
             }
         });
@@ -120,9 +117,6 @@ class MailHandler {
                     else {
                         this.logger.log('INFO', `[#${seqno}] Falscher Betreff (${subject}) - Alarm wird nicht ausgelöst`);
                     }
-                }
-                else {
-                    this.logger.log('INFO', `[#${seqno}] Falscher Absender (${fromAddr}) - Alarm wird nicht ausgelöst`);
                 }
             })
             .catch(err => {
@@ -167,7 +161,8 @@ class MailHandler {
             "address": {
                 "street": "",
                 "city": "",
-                "object": ""
+                "object": "",
+                "info": "",
             },
             "groups": [],
             "vehicles": [],
@@ -180,6 +175,7 @@ class MailHandler {
 
         // Stichwort, Text und Einsatzobjekt
         let stichwort = tableData['Einsatzstichwort:']?.[0] || ''
+        stichwort = this.stichwoerter[stichwort.toUpperCase()] || stichwort
         let sachverhalt = tableData['Sachverhalt:']?.[0] || ''
         let notfallgeschehen = tableData['Notfallgeschehen:']?.[0] || ''
 
@@ -204,6 +200,7 @@ class MailHandler {
             payload.address.street = tableData['Strasse:']?.[0] || ''
         }
         payload.address.city = tableData['PLZ / Ort:']?.[0] || ''
+        payload.address.info = tableData['Info:']?.[0] || ''
 
         // Empfängergruppen und alarmierte Fahrzeuge
         const addAlarmUnits = (property, payloadProperty) => {
