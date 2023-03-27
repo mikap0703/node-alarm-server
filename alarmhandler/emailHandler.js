@@ -112,9 +112,9 @@ class MailHandler {
             .then(parsed => {
                 const {from, subject, text, html, date} = parsed;
                 let fromAddr = from.value[0].address;
-
                 let mailDate = new Date(date);
-                if ((Date.now() - mailDate / 1000) > this.maxAge) {
+
+                if ((Date.now() - mailDate) / 1000 > this.maxAge) {
                     this.logger.log('INFO', `[#${seqno}] Mail zu alt (${mailDate.toLocaleDateString()}) - Alarm wird nicht ausgelöst`);
                 }
                 else {
