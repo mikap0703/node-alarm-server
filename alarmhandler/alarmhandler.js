@@ -4,47 +4,14 @@ import {DiveraHandler} from "./apiHandler.js";
 import MailHandler from "./emailHandler.js";
 import DmeHandler from "./dmeHandler.js";
 import configChecker from "../config.js";
-import express from "express";
 import fs from "fs";
-import chalk from "chalk";
-
-class Logger {
-    constructor(__dirname) {
-        this.logDir = path.join(__dirname, 'logs');
-    }
-
-    log (type, payload) {
-        let doLog = chalk.red
-        switch (type) {
-            case 'INFO':
-                doLog = chalk.bold.green;
-                break
-            case 'WARN':
-                doLog = chalk.bold.yellow
-                break
-            case 'ERROR':
-                doLog = chalk.bold.red
-                break
-        }
-        console.log(doLog(`[${type}] - ${payload}`))
-    }
-
-    convertObject (o) {
-        return typeof(o) + ': ' + JSON.stringify(o, null, '\t')
-    }
-}
 
 export default class AlarmHandler {
-    status;
-    constructor(dirname) {
-        this.dirname = dirname
-        this.logger = new Logger(this.dirname)
+    constructor(config, logger) {
+        this.config = config
+        this.logger = logger
 
         this.configChecker = new configChecker();
-    }
-
-    async start() {
-        await this.loadConfig()
 
         this.doTriggerAlarm = this.config.general.alarm
 
@@ -64,13 +31,16 @@ export default class AlarmHandler {
                 this.triggerAlarm = this.triggerAlamos;
                 break;
         }
+    }
 
+    async start() {
         if (this.config.general.mail) {
-            let mail = new MailHandler(this.handleAlarm.bind(this), this.config.mail, this.logger)
-            mail.startConnection()
+            this.mailHandler = new MailHandler(this.handleAlarm.bind(this), this.config.mail, this.logger)
+            this.mailHandler.start()
         }
         if (this.config.general.serial_dme) {
             // TODO: Serielle Auswertung
+            this.dmeHandler = new DmeHandler(this.handleAlarm().bind(this), this.config.serialDME, this.logger)
             this.logger.log('WARN', 'SERIAL DME - Auswertung noch nicht implementiert')
         }
     }
