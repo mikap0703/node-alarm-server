@@ -1,5 +1,6 @@
 {
   "comPort": "COM1",
+  "baudRate": 9600,
   "rics": [
     {
       "4711": "group4711"
