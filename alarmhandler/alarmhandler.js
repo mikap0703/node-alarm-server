@@ -1,4 +1,3 @@
-import {fileURLToPath} from "url";
 import path from "path";
 import {DiveraHandler} from "./apiHandler.js";
 import MailHandler from "./emailHandler.js";
@@ -38,9 +37,9 @@ export default class AlarmHandler {
             this.mailHandler = new MailHandler(this.handleAlarm.bind(this), this.config.mail, this.logger)
             this.mailHandler.start()
         }
-        if (this.config.general.serial_dme) {
-            // TODO: Serielle Auswertung
-            this.dmeHandler = new DmeHandler(this.handleAlarm().bind(this), this.config.serialDME, this.logger)
+        if (this.config.general.serialDME) {
+            this.dmeHandler = new DmeHandler(this.handleAlarm.bind(this), this.config.serialDME, this.logger)
+            this.dmeHandler.start()
             this.logger.log('WARN', 'SERIAL DME - Auswertung noch nicht implementiert')
         }
     }
