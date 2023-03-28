@@ -17,5 +17,25 @@
     "FW Musterstadt Wehrführung": "WehrführerID",
     "FW Musterstadt LB Führung": "LBFührungID"
   },
-  "mailSchema": "SecurCad/..."
+  "mailSchema": "SecurCad/...",
+  "stichwoerter": {
+    "B1": "Brand 1",
+    "B2": "Brand 2",
+    "B3": "Brand 3",
+    "B4": "Brand 4",
+    "BKA": "Brand Kamin",
+    "BFK": "Brand Fahrzeug klein",
+    "BFG": "Brand Fahrzeug groß",
+    "VUP": "VU mit Person",
+    "VU": "Verkehrsunfall",
+    "TÜR": "Türöffnung",
+    "THK": "TH Klein",
+    "RDTRAG": "Tragehilfe Rettungsdienst",
+    "RDDLK": "Unterstützung DLK RD",
+    "PIN": "Person in Notlage",
+    "ABCMESS": "ABC Messen",
+    "WASK": "Wasserschaden klein",
+    "ÖLSK": "Ölspur klein",
+    "ET": "Einsatz Tier"
+  }
 }

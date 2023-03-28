@@ -1,5 +1,33 @@
 import chalk from "chalk";
 import winston from "winston";
+import path from "path";
+
+export default class Logger {
+    constructor(__dirname) {
+        this.logDir = path.join(__dirname, 'logs');
+    }
+
+    log (type, payload) {
+        let doLog = chalk.red
+        switch (type) {
+            case 'INFO':
+                doLog = chalk.bold.green;
+                break
+            case 'WARN':
+                doLog = chalk.bold.yellow
+                break
+            case 'ERROR':
+                doLog = chalk.bold.red
+                break
+        }
+        console.log(doLog(`[${type}] - ${payload}`))
+    }
+
+    convertObject (o) {
+        return typeof(o) + ': ' + JSON.stringify(o, null, '\t')
+    }
+}
+
 
 // Define the custom colors for each log level
 const customColors = {
@@ -54,8 +82,3 @@ const logger = winston.createLogger({
     // Add the custom colors to the logger
     levels: Object.assign(winston.config.npm.levels, customColors)
 });
-
-logger.info('This is an info message');
-logger.warn('This is a warning message');
-logger.error('This is an error message');
-logger.debug('This is a debug message');

@@ -1,5 +1,5 @@
 import Imap from "imap";
-import {simpleParser, MailParser} from "mailparser";
+import {simpleParser} from "mailparser";
 import {config} from "dotenv";
 import {JSDOM} from "jsdom";
 
@@ -19,22 +19,25 @@ class MailHandler {
                     forceNoop: true
             }
         });
-        this.alarmSender = mailConfig.alarmSender
-        this.alarmSubject = mailConfig.alarmSubject
-        this.alarmGroups = mailConfig.alarmGroups
-        this.alarmVehicles = mailConfig.alarmVehicles
-        this.alarmMembers = mailConfig.alarmMembers
+
+        this.maxAge = mailConfig.maxAge;
+        this.alarmSender = mailConfig.alarmSender;
+        this.alarmSubject = mailConfig.alarmSubject;
+        this.alarmGroups = mailConfig.alarmGroups;
+        this.alarmVehicles = mailConfig.alarmVehicles;
+        this.alarmMembers = mailConfig.alarmMembers;
+        this.stichwoerter = mailConfig.stichwoerter;
 
         switch (mailConfig.mailSchema) {
             case "SecurCad":
-                this.mailParser = this.parseSecurCad
+                this.mailParser = this.parseSecurCad;
                 break;
         }
         this.triggerAlarm = triggerAlarm;
         this.logger = logger;
     }
 
-    startConnection() {
+    start() {
         this.connection.connect();
         this.connection.once('ready', () => {
             this.logger.log('INFO', 'IMAP Login erfolgreich!');
@@ -49,16 +52,13 @@ class MailHandler {
     openInbox() {
         this.connection.openBox('INBOX', true, (err, box) => {
             if (err) {
-                this.logger.log('ERROR', err)
+                this.logger.log('ERROR', err);
             }
             else if (process.env.DEV_MODE == 1) { // DEV
-                this.logger.log('WARN', 'ACHTUNG - DEV-Modus aktiviert')
-                var f = this.connection.seq.fetch('370:*', {
-                    bodies: '',
-                    struct: true
-                })
+                this.logger.log('WARN', 'ACHTUNG - DEV-Modus aktiviert');
+                var f = this.connection.seq.fetch((box.messages.total - 5) + ':*', { bodies: '', struct: true });
 
-                this.logger.log('INFO', `Warten auf neue Mails von ${this.alarmSender} mit dem Betreff ${this.alarmSubject}`)
+                this.logger.log('INFO', `Warten auf neue Mails von ${this.alarmSender} mit dem Betreff ${this.alarmSubject}`);
 
                 f.on('message', (msg, seqno) => {
                     this.logger.log('INFO', '[MAIL] - ' + seqno);
@@ -68,19 +68,19 @@ class MailHandler {
                             buffer += chunk.toString('utf8');
                         });
                         stream.once('end', () => {
-                            this.evalMail(buffer, seqno)
+                            this.evalMail(buffer, seqno);
                         });
                     });
+                });
 
-                    msg.once('attributes', function (attrs) {
-                        // console.log('Attributes: %s', inspect(attrs, false, 8));
-                    });
+                f.once('error', (err) => {
+                    this.logger.log('ERROR', err);
                 });
 
             }
 
             else {
-                this.logger.log('INFO', `Warten auf neue Mails von ${this.alarmSender} mit dem Betreff ${this.alarmSubject}`)
+                this.logger.log('INFO', `Warten auf neue Mails von ${this.alarmSender} mit dem Betreff ${this.alarmSubject}`);
 
                 this.connection.on('mail', () => {
                     this.logger.log('INFO', 'Neue Mail! Beginne mit Auswertung...');
@@ -94,14 +94,14 @@ class MailHandler {
                                 buffer += chunk.toString('utf8');
                             });
                             stream.once('end', () => {
-                                this.evalMail(buffer, seqno)
+                                this.evalMail(buffer, seqno);
                             });
                         });
                     });
 
                     f.once('error', (err) => {
-                        this.logger.log('ERROR', err)
-                    })
+                        this.logger.log('ERROR', err);
+                    });
                 });
             }
         });
@@ -110,19 +110,26 @@ class MailHandler {
     evalMail(mail, seqno) {
         simpleParser(mail)
             .then(parsed => {
-                const {from, subject, text, html} = parsed;
+                const {from, subject, text, html, date} = parsed;
                 let fromAddr = from.value[0].address;
-                if (fromAddr == this.alarmSender || this.alarmSender == '*') {
-                    if (subject == this.alarmSubject || this.alarmSubject == '*') {
-                        this.logger.log('INFO', `[#${seqno}] Absender (${fromAddr}) und Betreff (${subject}) stimmen überein - Mail #${seqno} wird ausgewertet!`)
-                        this.triggerAlarm(this.mailParser(seqno, text, html));
-                    }
-                    else {
-                        this.logger.log('INFO', `[#${seqno}] Falscher Betreff (${subject}) - Alarm wird nicht ausgelöst`);
-                    }
+                let mailDate = new Date(date);
+
+                if ((Date.now() - mailDate) / 1000 > this.maxAge) {
+                    this.logger.log('INFO', `[#${seqno}] Mail zu alt (${mailDate.toLocaleDateString()}) - Alarm wird nicht ausgelöst`);
                 }
                 else {
-                    this.logger.log('INFO', `[#${seqno}] Falscher Absender (${fromAddr}) - Alarm wird nicht ausgelöst`);
+                    if (fromAddr == this.alarmSender || this.alarmSender == '*') {
+                        if (subject == this.alarmSubject || this.alarmSubject == '*') {
+                            this.logger.log('INFO', `[#${seqno}] Absender (${fromAddr}) und Betreff (${subject}) stimmen überein - Mail #${seqno} wird ausgewertet!`)
+                            this.triggerAlarm(this.mailParser(seqno, text, html));
+                        }
+                        else {
+                            this.logger.log('INFO', `[#${seqno}] Falscher Betreff (${subject}) - Alarm wird nicht ausgelöst`);
+                        }
+                    }
+                    else {
+                        this.logger.log('INFO', `[#${seqno}] Falscher Absender (${fromAddr}) - Alarm wird nicht ausgelöst`);
+                    }
                 }
             })
             .catch(err => {
@@ -158,7 +165,7 @@ class MailHandler {
             return result;
         };
 
-        const tableData = extractTableData(html)
+        const tableData = extractTableData(html + text)
 
         let payload = {
             "id": "",
@@ -167,7 +174,8 @@ class MailHandler {
             "address": {
                 "street": "",
                 "city": "",
-                "object": ""
+                "object": "",
+                "info": "",
             },
             "groups": [],
             "vehicles": [],
@@ -180,6 +188,7 @@ class MailHandler {
 
         // Stichwort, Text und Einsatzobjekt
         let stichwort = tableData['Einsatzstichwort:']?.[0] || ''
+        stichwort = this.stichwoerter[stichwort.toUpperCase()] || stichwort
         let sachverhalt = tableData['Sachverhalt:']?.[0] || ''
         let notfallgeschehen = tableData['Notfallgeschehen:']?.[0] || ''
 
@@ -204,10 +213,10 @@ class MailHandler {
             payload.address.street = tableData['Strasse:']?.[0] || ''
         }
         payload.address.city = tableData['PLZ / Ort:']?.[0] || ''
+        payload.address.info = tableData['Info:']?.[0] || ''
 
         // Empfängergruppen und alarmierte Fahrzeuge
-
-        const addToPayload = (property, payloadProperty) => {
+        const addAlarmUnits = (property, payloadProperty) => {
             for (let g in this[property]) {
                 if (tableData[g]) {
                     let v = this[property][g];
@@ -218,11 +227,12 @@ class MailHandler {
                     }
                 }
             }
+            payload[payloadProperty] = [...new Set(payload[payloadProperty])]
         }
 
-        addToPayload("alarmGroups", "groups");
-        addToPayload("alarmVehicles", "vehicles");
-        addToPayload("alarmMembers", "members");
+        addAlarmUnits("alarmGroups", "groups");
+        addAlarmUnits("alarmVehicles", "vehicles");
+        addAlarmUnits("alarmMembers", "members");
 
         this.logger.log('INFO', this.logger.convertObject(payload))
         return payload
