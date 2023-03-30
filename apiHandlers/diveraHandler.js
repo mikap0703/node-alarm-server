@@ -2,10 +2,10 @@ import axios from "axios";
 
 export class DiveraHandler {
     constructor(apiKey, logger, generalConfig) {
-        this.apikey = apiKey
-        this.logger = logger
-        this.generalConfig = generalConfig
-        this.checkConnection()
+        this.apikey = apiKey;
+        this.logger = logger;
+        this.generalConfig = generalConfig;
+        this.checkConnection();
     }
 
     triggerAlarm(alarmInfo) {
@@ -73,19 +73,4 @@ export class DiveraHandler {
             }
         })
     }
-}
-
-export class AlamosHandler {
-    constructor(apiKey, logger) {
-        this.apikey = apiKey
-        this.logger = logger
-
-        this.logger.log('ERROR', 'Alamos Anbindung ist nicht implementiert')
-    }
-
-    triggerAlarm(alarmInfo) {
-        this.logger.log('ERROR', 'Alamos Anbindung ist nicht implementiert')
-    }
-
-
 }

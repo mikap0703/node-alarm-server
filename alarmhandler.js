@@ -1,8 +1,9 @@
 import path from "path";
-import {DiveraHandler} from "./apiHandler.js";
+import {DiveraHandler} from "./apiHandlers/diveraHandler";
+import {AlamosHandler} from "./apiHandlers/alamosHandler.js";
 import MailHandler from "./emailHandler.js";
 import DmeHandler from "./dmeHandler.js";
-import configChecker from "../config.js";
+import configChecker from "./config.js";
 import fs from "fs";
 
 export default class AlarmHandler {
@@ -27,7 +28,8 @@ export default class AlarmHandler {
                 this.triggerAlarm = divera.triggerAlarm.bind(divera)
                 break;
             case "Alamos":
-                this.triggerAlarm = this.triggerAlamos;
+                let alamos = new AlamosHandler(this.apiKey, this.logger, this.config.general)
+                this.triggerAlarm = alamos.triggerAlarm.bind(alamos);
                 break;
         }
     }

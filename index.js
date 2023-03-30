@@ -1,4 +1,4 @@
-import AlarmHandler from "./alarmhandler/alarmhandler.js";
+import AlarmHandler from "./alarmhandler.js";
 import express from "express";
 import {fileURLToPath} from "url";
 import path from "path";
