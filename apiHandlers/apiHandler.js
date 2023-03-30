@@ -3,9 +3,9 @@ import axios from "axios";
 export class apiHandler {
     constructor(apiKey, logger) {
         this.apikey = apiKey;
-        this.logger = logger
-        this.generalConfig = generalConfig
-        this.checkConnection()
+        this.logger = logger;
+        this.generalConfig = generalConfig;
+        this.checkConnection();
     }
 
     triggerAlarm(alarmInfo) {
