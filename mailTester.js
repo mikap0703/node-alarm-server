@@ -2,7 +2,7 @@ import path from "path";
 import chalk from "chalk";
 import {fileURLToPath} from "url";
 import configChecker from "./config.js";
-import AlarmHandler from "./alarmhandler/alarmhandler.js";
+import AlarmHandler from "./alarmhandler.js";
 
 class Logger {
     constructor(__dirname) {
