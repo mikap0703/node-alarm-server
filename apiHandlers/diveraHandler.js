@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export class DiveraHandler {
+export default class DiveraHandler {
     constructor(apiKey, logger, generalConfig) {
         this.apikey = apiKey;
         this.logger = logger;
