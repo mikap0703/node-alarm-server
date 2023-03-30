@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export class apiHandler {
+export default class apiHandler {
     constructor(apiKey, logger) {
         this.apikey = apiKey;
         this.logger = logger;

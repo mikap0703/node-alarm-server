@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export class AlamosHandler {
+export default class AlamosHandler {
     constructor(apiKey, logger) {
         this.apikey = apiKey;
         this.logger = logger;
