@@ -25,7 +25,7 @@ export default class configChecker {
         });
 
         this.serialDMEConfigSchema = yup.object({
-            comPort: yup.string().required(),
+            port: yup.string().required(),
             rics: yup.array()
         });
     }
