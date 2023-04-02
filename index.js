@@ -1,9 +1,9 @@
 import AlarmHandler from "./alarmhandler.js";
-import express from "express";
 import {fileURLToPath} from "url";
 import path from "path";
 import configChecker from "./config.js";
 import Logger from "./logger.js";
+import WebUI from "./frontend/server.js";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -20,15 +20,5 @@ const logger = new Logger(dirname);
 const alarmhandler = new AlarmHandler(config.config, logger);
 alarmhandler.start()
 
-function startWebUI () {
-    const app = express();
-    const port = 8112;
-
-    app.get('/', (req, res) => {
-        res.send(alarmhandler.status);
-    });
-
-    app.listen(port, () => {
-        alarmhandler.logger.log('INFO', `WebUI gestartet auf Port ${port}`);
-    });
-}
+const frontend = new WebUI(dirname, 8112, logger)
+frontend.start()
