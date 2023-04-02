@@ -1,0 +1,7 @@
+node_modules
+npm-debug.log
+.gitignore
+/.env
+/dev-config/
+/prod-config/
+/config/
