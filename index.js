@@ -22,7 +22,7 @@ alarmhandler.start()
 
 function startWebUI () {
     const app = express();
-    const port = alarmhandler.config.general.webUIPort;
+    const port = 8112;
 
     app.get('/', (req, res) => {
         res.send(alarmhandler.status);
