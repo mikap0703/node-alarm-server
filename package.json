@@ -20,6 +20,8 @@
     "jsdom": "^21.1.0",
     "mailparser": "^3.6.3",
     "serialport": "^10.5.0",
+    "socket.io": "^4.6.1",
+    "tail": "^2.2.6",
     "winston": "^3.8.2",
     "yup": "^1.0.2"
   }
