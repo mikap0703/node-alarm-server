@@ -4,11 +4,11 @@ export default class DmeHandler {
     constructor(triggerAlarm, dmeConfig, logger) {
         this.logger = logger;
         this.config = dmeConfig;
-        this.path = this.config.comPort || '/dev/tty.usbserial-110';
-        this.baudRate = this.config.baudRate || 9600;
+        this.path = this.config.port;
+        this.baudrate = this.config.baudrate;
         this.port = new SerialPort( {
             path: this.path,
-            baudRate: this.baudRate,
+            baudRate: this.baudrate,
             autoOpen: false,
         });
         this.parser = new ReadlineParser()
