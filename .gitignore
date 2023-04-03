@@ -1,3 +1,4 @@
 /.env
 /dev-config/
 /prod-config/
+/logs/
