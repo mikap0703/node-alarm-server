@@ -5,3 +5,4 @@ npm-debug.log
 /dev-config/
 /prod-config/
 /config/
+/logs/
