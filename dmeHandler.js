@@ -1,6 +1,6 @@
 import { SerialPort, ReadlineParser } from 'serialport';
 
-export default class DmeHandler {
+export default class DMEHandler {
     constructor(triggerAlarm, dmeConfig, logger) {
         this.logger = logger;
         this.config = dmeConfig;
@@ -11,7 +11,7 @@ export default class DmeHandler {
             baudRate: this.baudrate,
             autoOpen: false,
         });
-        this.parser = new ReadlineParser()
+        this.parser = new ReadlineParser({ delimiter: '\r\n\0' });
 
         this.port.pipe(this.parser)
         this.triggerAlarm = triggerAlarm;
@@ -27,7 +27,7 @@ export default class DmeHandler {
                 this.logger.log('ERROR', 'Fehler beim Öffnen des seriellen Ports: ' + err.message);
                 return;
             }
-            this.logger.log('INFO', 'Serieller Port geöffnet: ' + this.path + ', Baudrate: ' + this.baudRate);
+            this.logger.log('INFO', 'Serieller Port geöffnet: ' + this.path + ', Baudrate: ' + this.baudrate);
         });
 
         this.parser.on('data', (data) => {
@@ -55,5 +55,14 @@ export default class DmeHandler {
             }
             this.logger.log('INFO', 'Serieller Port geschlossen.');
         });
+    }
+
+    parseDME(dmeContent) {
+        console.log(dmeContent)
+        const [date, ric, msg] = dmeContent.split(/\r?\n|\r|\n/g);
+
+        console.log(date);
+        console.log(ric);
+        console.log(msg)
     }
 }
