@@ -2,7 +2,7 @@ import path from "path";
 import DiveraHandler from './apiHandlers/diveraHandler.js';
 import AlamosHandler from './apiHandlers/alamosHandler.js';
 import MailHandler from "./emailHandler.js";
-import DmeHandler from "./dmeHandler.js";
+import DMEHandler from "./dmeHandler.js";
 import configChecker from "./config.js";
 import fs from "fs";
 
@@ -40,7 +40,7 @@ export default class AlarmHandler {
             this.mailHandler.start()
         }
         if (this.config.general.serialDME) {
-            this.dmeHandler = new DmeHandler(this.handleAlarm.bind(this), this.config.serialDME, this.logger)
+            this.dmeHandler = new DMEHandler(this.handleAlarm.bind(this), this.config.serialDME, this.logger)
             this.dmeHandler.start()
             this.logger.log('WARN', 'SERIAL DME - Auswertung noch nicht implementiert')
         }
