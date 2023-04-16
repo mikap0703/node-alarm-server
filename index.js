@@ -21,4 +21,4 @@ const alarmhandler = new AlarmHandler(config.config, logger);
 alarmhandler.start()
 
 const frontend = new WebUI(dirname, 8112, logger)
-frontend.start()
+//frontend.start()
