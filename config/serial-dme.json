@@ -1,12 +1,41 @@
 {
-  "comPort": "COM1",
-  "baudRate": 9600,
+  "port": "/dev/ttyUSB0",
+  "delimiter": "\\r\\n\\0",
+  "baudrate": 9600,
+  "alarmList": [
+    "Brand 1",
+    "Brand 2",
+    "Brand 3",
+    "Brand 4",
+    "Brand Kamin",
+    "Brand Fahrzeug klein",
+    "Brand Fahrzeug groß",
+    "VU mit Person",
+    "Verkehrsunfall",
+    "Türöffnung",
+    "TH Klein",
+    "Tragehilfe Rettungsdienst",
+    "Unterstützung DLK RD",
+    "Person in Notlage",
+    "ABC Messen",
+    "Wasserschaden klein",
+    "Ölspur klein",
+    "Einsatz Tier"
+  ],
   "rics": [
     {
-      "4711": "group4711"
+      "Fw MS VA": {
+        "groups": ["Mannschaft Gruppe"],
+        "vehicles": ["FL MS 1/10", "FL MS 1/31", "FL MS 1/46"],
+        "members": []
+      }
     },
     {
-      "1234": "group1234"
+      "FW MS DLK": {
+        "groups": ["DLK Gruppe"],
+        "vehicles": ["FL MS 1/10", "FL MS 1/31"],
+        "members": []
+      }
     }
   ]
 }
