@@ -11,7 +11,7 @@ export default class DMEHandler {
             baudRate: this.baudrate,
             autoOpen: false,
         });
-        this.parser = new ReadlineParser({ delimiter: '\r\n\0' });
+        this.parser = new ReadlineParser({ delimiter: this.config.delimiter });
 
         this.port.pipe(this.parser)
         this.triggerAlarm = triggerAlarm;
