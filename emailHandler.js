@@ -2,6 +2,7 @@ import Imap from "imap";
 import {simpleParser} from "mailparser";
 import {config} from "dotenv";
 import {JSDOM} from "jsdom";
+import AlarmTemplate from "./alarm.js";
 
 config();
 
@@ -182,9 +183,11 @@ class MailHandler {
             "members": []
         }
 
+        let alarm = new AlarmTemplate(this.logger)
+
         // Einsatznummer - ID
         let einsatznummer = tableData['Einsatznummer:']?.[0] || ''
-        payload['id'] = einsatznummer.toString()
+        alarm.data.id = einsatznummer.toString()
 
         // Stichwort, Text und Einsatzobjekt
         let stichwort = tableData['Einsatzstichwort:']?.[0] || ''
@@ -193,27 +196,27 @@ class MailHandler {
         let notfallgeschehen = tableData['Notfallgeschehen:']?.[0] || ''
 
         let objekt = tableData['Objekt:']?.[0] || ''
-        payload.address.object = objekt
+        alarm.data.address.object = objekt
 
         if (notfallgeschehen != '') {
             try {
-                payload['title'] = notfallgeschehen.match(/\((.*?)\)/)[1]
+                alarm.data.title = notfallgeschehen.match(/\((.*?)\)/)[1]
             } catch {
-                payload['title'] = notfallgeschehen
+                alarm.data.title = notfallgeschehen
             }
         } else {
-            if (stichwort) payload['title'] = stichwort
+            if (stichwort) alarm.data.title = stichwort
         }
 
-        payload['text'] = sachverhalt ? (objekt ? sachverhalt + ' - ' + objekt : sachverhalt) : objekt
+        alarm.data.text = sachverhalt ? (objekt ? sachverhalt + ' - ' + objekt : sachverhalt) : objekt
 
         // Adresse
-        payload.address.street = tableData['Strasse / Hs.-Nr.:']?.[0] || ''
-        if (payload.address.street == '') {
-            payload.address.street = tableData['Strasse:']?.[0] || ''
+        alarm.data.address.street = tableData['Strasse / Hs.-Nr.:']?.[0] || ''
+        if (alarm.data.address.street == '') {
+            alarm.data.address.street = tableData['Strasse:']?.[0] || ''
         }
-        payload.address.city = tableData['PLZ / Ort:']?.[0] || ''
-        payload.address.info = tableData['Info:']?.[0] || ''
+        alarm.data.address.city = tableData['PLZ / Ort:']?.[0] || ''
+        alarm.data.address.info = tableData['Info:']?.[0] || ''
 
         // Empfängergruppen und alarmierte Fahrzeuge
         const addAlarmUnits = (property, payloadProperty) => {
