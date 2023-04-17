@@ -24,6 +24,7 @@ class MailHandler {
         this.maxAge = mailConfig.maxAge;
         this.alarmSender = mailConfig.alarmSender;
         this.alarmSubject = mailConfig.alarmSubject;
+        this.alarmReceiverKeywords = mailConfig.alarmReceiverKeywords;
         this.alarmGroups = mailConfig.alarmGroups;
         this.alarmVehicles = mailConfig.alarmVehicles;
         this.alarmMembers = mailConfig.alarmMembers;
@@ -135,6 +136,7 @@ class MailHandler {
             })
             .catch(err => {
                 this.logger.log('ERROR', `[#${seqno}] Fehler beim Parsen:`);
+                console.log(err)
                 this.logger.log('ERROR', this.logger.convertObject(err))
             });
     }
@@ -219,25 +221,18 @@ class MailHandler {
         alarm.data.address.info = tableData['Info:']?.[0] || ''
 
         // Empfängergruppen und alarmierte Fahrzeuge
-        const addAlarmUnits = (property, payloadProperty) => {
-            for (let g in this[property]) {
-                if (tableData[g]) {
-                    let v = this[property][g];
-                    if (Array.isArray(v)) {
-                        payload[payloadProperty].push(...v);
-                    } else {
-                        payload[payloadProperty].push(v);
-                    }
+        for (const key of Object.keys(this.alarmReceiverKeywords)) {
+            if (tableData[key]) {
+                const keywords = this.alarmReceiverKeywords[key];
+                for (const receiver of Object.keys(keywords)) {
+                    const keywordsForReceiver = keywords[receiver];
+                    const alarmDataReceiver = alarm.data[receiver] || [];
+                    alarm.data[receiver] = [...new Set([...keywordsForReceiver, ...alarmDataReceiver])];
                 }
             }
-            payload[payloadProperty] = [...new Set(payload[payloadProperty])]
         }
 
-        addAlarmUnits("alarmGroups", "groups");
-        addAlarmUnits("alarmVehicles", "vehicles");
-        addAlarmUnits("alarmMembers", "members");
-
-        this.logger.log('INFO', this.logger.convertObject(payload))
+        this.logger.log('INFO', this.logger.convertObject(alarm.data))
         return payload
     }
 }
