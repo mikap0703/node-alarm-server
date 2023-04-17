@@ -6,16 +6,22 @@
   "tls": true,
   "alarmSender": "Absender, bei dem der Alarm ausgelöst wird oder *",
   "alarmSubject": "Betreff bei dem der Alarm ausgelöst wird oder *",
-  "alarmGroups": {
-    "FW Musterstadt Vollalarm": "Mannschaft Gruppe",
-    "FW Musterstadt DLK": "DLK Gruppe"
-  },
-  "alarmVehicles": {
-    "FW Musterstadt Vollalarm": ["FL MS 1/10", "FL MS 1/31", "FL MS 1/46"]
-  },
-  "alarmMembers": {
-    "FW Musterstadt Wehrführung": "WehrführerID",
-    "FW Musterstadt LB Führung": "LBFührungID"
+  "alarmReceiverKeywords": {
+    "FW Musterstadt Vollalarm": {
+      "groups": ["Mannschaft Gruppe"],
+      "vehicles": ["FL MS 1/10", "FL MS 1/31", "FL MS 1/46"],
+      "members": []
+    },
+    "FW Musterstadt DLK": {
+      "groups": ["DLK Gruppe"],
+      "vehicles": ["FL MS 1/10", "FL MS 1/31"],
+      "members": []
+    },
+    "FW Musterstadt Wehrführung": {
+      "groups": [],
+      "vehicles": ["FL MS 0/10"],
+      "members": ["WehrführerID"]
+    }
   },
   "mailSchema": "SecurCad/...",
   "stichwoerter": {
