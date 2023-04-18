@@ -1,0 +1,59 @@
+# E-Mail Adresse, an die das Alarmfax geschickt wird
+user: einsatz@ffw-musterstadt.de
+
+# Passwort für das IMAP Postfach
+password: 123456
+
+# URL des IMAP Servers
+host: imap.goneo.de
+
+# Port des IMAP Servers
+port: 993
+
+# TLS verwenden: ja/nein
+tls: true
+
+# maximales Alter der Mails, die ausgewertet werden sollen in Sekunden
+maxAge: 300
+
+# Absender, bei dem der Alarm ausgelöst wird oder *
+alarmSender: alarm@leitstelle.de
+
+# Betreff bei dem der Alarm ausgelöst wird oder *
+alarmSubject: Test
+
+# Schlüsselwörter für Alarmtemplates, siehe Dokumentation
+alarmReceiverKeywords:
+  FW Musterstadt Vollalarm:
+    groups:
+      - Mannschaft Gruppe
+    vehicles:
+      - FL MS 1/10
+      - FL MS 1/31
+      - FL MS 1/46
+    members: []
+  FW Musterstadt DLK:
+    groups:
+      - DLK Gruppe
+    vehicles:
+      - FL MS 1/10
+      - FL MS 1/31
+    members: []
+  FW Musterstadt Wehrführung:
+    groups: []
+    vehicles:
+      - FL MS 0/10
+    members:
+      - WehrführerID
+
+# Mail Schema: SecurCad/...
+mailSchema: SecurCad
+
+# Stichwortverzeichnis
+stichwoerter:
+  B1: Brand 1
+  B2: Brand 2
+  B3: Brand 3
+  B4: Brand 4
+  VUP: VU mit Person
+  VU: Verkehrsunfall

@@ -1,0 +1,15 @@
+# App zur Alarmierung hier angeben
+api: "Divera/Alamos/..."
+# API-Key/Accessschlüssel
+apiKey: asdf1234
+# Serielles Schnittstelle aktivieren/deaktivieren
+serialDME: false
+# Mailauswertung aktivieren/deaktivieren
+mail: true
+# Weiterleiten von Alarmen aktivieren/deaktivieren
+alarm: false
+# Standard Einsatztitel
+defaultAlarmTitle: Einsatz
+# API spezifische Einstellungen, hier: Divera
+diveraSettings:
+  notificationType: '3'

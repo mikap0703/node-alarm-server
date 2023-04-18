@@ -1,0 +1,35 @@
+# Serieller Port, an dem der Melder angeschlossen ist
+port: "/dev/ttyUSB0"
+
+# Trennzeichen, der am Ende, jeder Einsatzmeldung kommt. Standard: \\r\\n\\0
+delimiter: "\\r\\n\\0"
+
+# Baudrate des Melders. Standard: 9600
+baudrate: 9600
+
+# DME Stichwortverzeichnis
+alarmList:
+  - Brand 1
+  - Brand 2
+  - Brand 3
+  - Brand 4
+  - VU mit Person
+  - Verkehrsunfall
+
+# Zuordnung Rics <-> Alarmtemplates
+rics:
+  - Fw MS VA:
+      groups:
+        - Mannschaft Gruppe
+      vehicles:
+        - FL MS 1/10
+        - FL MS 1/31
+        - FL MS 1/46
+      members: []
+  - FW MS DLK:
+      groups:
+        - DLK Gruppe
+      vehicles:
+        - FL MS 1/10
+        - FL MS 1/31
+      members: []
