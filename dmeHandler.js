@@ -2,20 +2,19 @@ import { SerialPort, ReadlineParser } from 'serialport';
 import AlarmBuilder from "./alarm.js";
 
 export default class DMEHandler {
-    constructor(triggerAlarm, dmeConfig, logger) {
-        this.logger = logger;
+    constructor(triggerAlarm, dmeConfig, alarmTemplates, logger) {
+        this.triggerAlarm = triggerAlarm;
         this.config = dmeConfig;
+        this.alarmTemplates = alarmTemplates;
+        this.logger = logger;
         this.path = this.config.port;
         this.baudrate = this.config.baudrate;
-        this.port = new SerialPort( {
+        this.port = new SerialPort({
             path: this.path,
             baudRate: this.baudrate,
             autoOpen: false,
         });
-        this.parser = new ReadlineParser({ delimiter: this.config.delimiter });
-
-        this.port.pipe(this.parser)
-        this.triggerAlarm = triggerAlarm;
+        this.parser = this.port.pipe(new ReadlineParser({delimiter: this.config.delimiter}));
     }
 
     start() {
@@ -33,10 +32,10 @@ export default class DMEHandler {
 
         this.parser.on('data', (data) => {
             // Entfernt Nicht-ASCII-Zeichen aus den empfangenen Daten.
+            console.log(data);
             data = data.replace(/[^\x00-\x7F]/g, '');
-            const dataArray = data.split(/\s{2,}/);
             // Verarbeitet die empfangenen Daten
-            this.handleData(dataArray);
+            this.handleData(data);
         });
 
         this.port.on('close', () => {
@@ -58,15 +57,37 @@ export default class DMEHandler {
         });
     }
 
-    parseDME(dmeContent) {
-        console.log(dmeContent)
-        const [date, ric, msg] = dmeContent.split(/\r?\n|\r|\n/g);
+    handleData(dmeContent) {
+        console.log(dmeContent);
+        const [date, ric, msg] = dmeContent.split(/\r?\n|\r|\n/g).slice(-3);
 
         console.log(date);
         console.log(ric);
         console.log(msg)
         let alarm = new AlarmBuilder(this.logger);
 
+        // TODO: default Template anwenden
 
+        for(let keyword of this.config.alarmList){
+            if(msg.includes(keyword)) {
+                alarm.data.title = keyword;
+                break;
+            }
+        }
+
+        alarm.data.text = msg;
+
+        let alarmTemplate = this.config.rics[ric] || '';
+
+        if (alarmTemplate === '') {
+            this.logger.log('INFO', `DME Alarm angekommen - RIC ${ric} - kein AlarmTemplate gefunden!`);
+        }
+        else {
+            let templates = this.alarmTemplates[alarmTemplate];
+            for (let type in templates) {
+                alarm.addUnits(type, templates[type]);
+            }
+            console.log(alarm.data);
+        }
     }
 }
