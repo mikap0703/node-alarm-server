@@ -35,7 +35,7 @@ export default class AlarmHandler {
             this.mailHandler.start()
         }
         if (this.config.general.serialDME) {
-            this.dmeHandler = new DMEHandler(this.handleAlarm.bind(this), this.config.serialDME, this.logger)
+            this.dmeHandler = new DMEHandler(this.handleAlarm.bind(this), this.config.serialDME, this.config.alarmTemplates, this.logger)
             this.dmeHandler.start()
             this.logger.log('WARN', 'SERIAL DME - Auswertung noch nicht implementiert')
         }
