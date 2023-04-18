@@ -8,14 +8,14 @@ import WebUI from "./frontend/server.js";
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
 
+const logger = new Logger(dirname);
+
+// Ordner, in dem sich die config YAML Dateien befinden wird angegeben
 const configFolder = process.env.DEV_CONFIG_PATH || './config';
 const configDir = path.join(dirname, configFolder);
 
-const configs = new configChecker();
-await configs.check(configDir);
-const config = configs;
-
-const logger = new Logger(dirname);
+const config = new configChecker(configDir, logger);
+config.getYaml();
 
 const alarmhandler = new AlarmHandler(config.config, logger);
 alarmhandler.start()
