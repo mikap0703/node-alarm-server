@@ -28,7 +28,5 @@ export default class configChecker {
             this.logger.log('ERROR', 'Fehler beim Parsen der YAML-Dateien!');
             this.logger.log('ERROR', err);
         }
-
-
     }
 }
