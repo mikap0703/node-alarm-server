@@ -39,5 +39,8 @@ export default class configChecker {
 
         const generalConfig = JSON.parse(fs.readFileSync(path.join(configDir, 'general.json')));
         this.config.general = await this.generalConfigSchema.validate(generalConfig);
+
+        const alarmTemplatesConfig = JSON.parse(fs.readFileSync(path.join(configDir, 'alarmTemplates.json')));
+        this.config.alarmTemplates = alarmTemplatesConfig; // TODO: Validation
     }
 }
