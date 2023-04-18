@@ -1,4 +1,5 @@
 import { SerialPort, ReadlineParser } from 'serialport';
+import AlarmBuilder from "./alarm.js";
 
 export default class DMEHandler {
     constructor(triggerAlarm, dmeConfig, logger) {
@@ -64,5 +65,8 @@ export default class DMEHandler {
         console.log(date);
         console.log(ric);
         console.log(msg)
+        let alarm = new AlarmBuilder(this.logger);
+
+
     }
 }
