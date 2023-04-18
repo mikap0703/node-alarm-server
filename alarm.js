@@ -18,4 +18,8 @@ export default class AlarmTemplate {
             "members": []
         };
     }
+
+    addUnits(type, units) {
+        this.data[type] = [...new Set([...this.data[type], ...units])]
+    }
 }
