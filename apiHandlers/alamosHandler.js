@@ -10,11 +10,11 @@ export default class AlamosHandler {
         this.logger.log('ERROR', 'Alamos Anbindung ist nicht implementiert');
     }
 
-    triggerAlarm(alarmInfo) {
+    triggerAlarm(alarm) {
         this.logger.log('ERROR', 'Alamos Anbindung ist nicht implementiert');
     }
 
     checkConnection() {
-        // Funktion, die die API testet...Verifizierung des API-Schlüssels
+        // Funktion, die die API testet... Verifizierung des API-Schlüssels
     }
 }

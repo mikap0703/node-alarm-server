@@ -8,7 +8,8 @@ export default class DiveraHandler {
         this.checkConnection();
     }
 
-    triggerAlarm(alarmInfo) {
+    triggerAlarm(alarm) {
+        let alarmInfo = alarm.data
         let address = ""
         if (alarmInfo.address.street != '') {
             if (alarmInfo.address.city != '') {

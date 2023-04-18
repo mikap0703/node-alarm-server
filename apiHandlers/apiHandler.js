@@ -8,11 +8,11 @@ export default class apiHandler {
         this.checkConnection();
     }
 
-    triggerAlarm(alarmInfo) {
-        // Funktion, die den Alarm anhand der übergebenen alarmInfos auslöst
+    triggerAlarm(alarm) {
+        // Funktion, die den Alarm anhand des übergebenen Alarms auslöst
     }
 
     checkConnection() {
-        // Funktion, die die API testet...Verifizierung des API-Schlüssels
+        // Funktion, die die API testet... Verifizierung des API-Schlüssels
     }
 }
