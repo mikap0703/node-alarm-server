@@ -36,7 +36,7 @@ class MailHandler {
                 this.mailParser = this.parseSecurCad;
                 break;
         }
-        this.triggerAlarm = triggerAlarm;
+        this.triggerAlarm = triggerAlarm; // triggerAlarm aus apiHandler
         this.logger = logger;
     }
 
@@ -87,12 +87,12 @@ class MailHandler {
 
                 this.connection.on('mail', () => {
                     this.logger.log('INFO', 'Neue Mail! Beginne mit Auswertung...');
-                    var f = this.connection.seq.fetch(box.messages.total + ':*', { bodies: '', struct: true });
+                    let f = this.connection.seq.fetch(box.messages.total + ':*', { bodies: '', struct: true });
 
                     f.on('message', (msg, seqno) => {
                         this.logger.log('INFO', '[MAIL] - ' + seqno);
                         msg.on('body', (stream) => {
-                            var buffer = '';
+                            let buffer = '';
                             stream.on('data', (chunk) => {
                                 buffer += chunk.toString('utf8');
                             });
@@ -121,8 +121,8 @@ class MailHandler {
                     this.logger.log('INFO', `[#${seqno}] Mail zu alt (${mailDate.toLocaleDateString()}) - Alarm wird nicht ausgelöst`);
                 }
                 else {
-                    if (fromAddr == this.alarmSender || this.alarmSender == '*') {
-                        if (subject == this.alarmSubject || this.alarmSubject == '*') {
+                    if (fromAddr === this.alarmSender || this.alarmSender === '*') {
+                        if (subject === this.alarmSubject || this.alarmSubject === '*') {
                             this.logger.log('INFO', `[#${seqno}] Absender (${fromAddr}) und Betreff (${subject}) stimmen überein - Mail #${seqno} wird ausgewertet!`)
                             this.triggerAlarm(this.mailParser(seqno, text, html));
                         }
@@ -201,7 +201,7 @@ class MailHandler {
         let objekt = tableData['Objekt:']?.[0] || ''
         alarm.data.address.object = objekt
 
-        if (notfallgeschehen != '') {
+        if (notfallgeschehen !== '') {
             try {
                 alarm.data.title = notfallgeschehen.match(/\((.*?)\)/)[1]
             } catch {
@@ -215,26 +215,27 @@ class MailHandler {
 
         // Adresse
         alarm.data.address.street = tableData['Strasse / Hs.-Nr.:']?.[0] || ''
-        if (alarm.data.address.street == '') {
+        if (alarm.data.address.street === '') {
             alarm.data.address.street = tableData['Strasse:']?.[0] || ''
         }
         alarm.data.address.city = tableData['PLZ / Ort:']?.[0] || ''
         alarm.data.address.info = tableData['Info:']?.[0] || ''
 
-        // Empfängergruppen und alarmierte Fahrzeuge
-        for (const key of Object.keys(this.alarmReceiverKeywords)) {
-            if (tableData[key]) {
-                const keywords = this.alarmReceiverKeywords[key];
-                for (const receiver of Object.keys(keywords)) {
-                    const keywordsForReceiver = keywords[receiver];
-                    const alarmDataReceiver = alarm.data[receiver] || [];
-                    alarm.data[receiver] = [...new Set([...keywordsForReceiver, ...alarmDataReceiver])];
+        // Einsatzvorlagen anwenden - Empfängergruppen und alarmierte Fahrzeuge
+        // TODO: gesamte Einsatzvorlage anwenden - nicht nur Empfängergruppen und alarmierte Fahrzeuge
+        for (let keyword in this.alarmTemplateKeywords) {
+            if (tableData[keyword]) {
+                // Keyword existiert in Alarm Mail
+                let templates = this.alarmTemplates[this.alarmTemplateKeywords[keyword]];
+
+                for (const template in templates) {
+                    alarm.addUnits(template, templates[template])
                 }
             }
         }
 
         this.logger.log('INFO', this.logger.convertObject(alarm.data))
-        return payload
+        return alarm
     }
 }
 
