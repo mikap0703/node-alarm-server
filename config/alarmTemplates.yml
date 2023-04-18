@@ -1,0 +1,22 @@
+default: {}
+"LB 4 Vollalarm":
+  groups:
+    - "LB 4 - Neuweiler"
+  vehicles:
+    - "FL SU 4/45"
+    - "FL SU 4/42"
+    - "FL SU 4/18"
+LB 4:
+  vehicles:
+    - "FL SU 4/45"
+    - "FL SU 4/42"
+    - "FL SU 4/18"
+"LB 1 Vollalarm":
+  groups:
+    - "LB 1 - Stadtmitte"
+"LB 3 Vollalarm":
+  groups:
+    - "LB 3 - Altenwald"
+DLK:
+  vehicles:
+    - "FL SU 1/31"
