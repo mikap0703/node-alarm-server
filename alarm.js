@@ -1,4 +1,4 @@
-export default class AlarmTemplate {
+export default class AlarmBuilder {
     constructor(logger) {
         this.logger = logger;
         this.data = {
