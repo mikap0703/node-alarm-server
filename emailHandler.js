@@ -7,7 +7,7 @@ import AlarmTemplate from "./alarm.js";
 config();
 
 class MailHandler {
-    constructor(triggerAlarm, mailConfig, logger) {
+    constructor(triggerAlarm, mailConfig, alarmTemplates, logger) {
         this.connection = new Imap({
             user: mailConfig.user,
             password: mailConfig.password,
@@ -24,7 +24,8 @@ class MailHandler {
         this.maxAge = mailConfig.maxAge;
         this.alarmSender = mailConfig.alarmSender;
         this.alarmSubject = mailConfig.alarmSubject;
-        this.alarmReceiverKeywords = mailConfig.alarmReceiverKeywords;
+        this.alarmTemplateKeywords = mailConfig.alarmTemplateKeywords;
+        this.alarmTemplates = alarmTemplates;
         this.alarmGroups = mailConfig.alarmGroups;
         this.alarmVehicles = mailConfig.alarmVehicles;
         this.alarmMembers = mailConfig.alarmMembers;
