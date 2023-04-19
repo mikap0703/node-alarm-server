@@ -87,7 +87,7 @@ export default class DMEHandler {
             for (let type in templates) {
                 alarm.addUnits(type, templates[type]);
             }
-            console.log(alarm.data);
         }
+        this.triggerAlarm(alarm);
     }
 }
