@@ -39,7 +39,7 @@ export default class AlarmHandler {
             let testString = `11:11 11.11.22
 SU04 VA
 TEST-ILS-Einsatz Brand 1 Brand Container Kreuzung Sulzbacher Weg - Industriestraße Sulzbach Neuweiler`
-            this.dmeHandler.handleData(testString)
+            //this.dmeHandler.handleData(testString)
             this.dmeHandler.start()
             this.logger.log('WARN', 'SERIAL DME - Auswertung noch nicht implementiert')
         }
