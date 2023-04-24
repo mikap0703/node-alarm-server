@@ -49,6 +49,7 @@ class MailHandler {
 
         this.connection.once('error', (err) => {
             this.logger.log('ERROR', 'Connection error:', err);
+            setTimeout(this.start, 5000);
         });
     }
 
