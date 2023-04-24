@@ -172,21 +172,6 @@ class MailHandler {
 
         const tableData = extractTableData(html + text)
 
-        let payload = {
-            "id": "",
-            "title": "",
-            "text": "",
-            "address": {
-                "street": "",
-                "city": "",
-                "object": "",
-                "info": "",
-            },
-            "groups": [],
-            "vehicles": [],
-            "members": []
-        }
-
         let alarm = new AlarmBuilder(this.logger)
 
         // Einsatznummer - ID
