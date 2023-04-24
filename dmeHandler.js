@@ -38,6 +38,10 @@ export default class DMEHandler {
             this.handleData(data);
         });
 
+        this.port.on('data', (data) => {
+            console.log(data);
+        });
+
         this.port.on('close', () => {
             this.logger.log('WARN', 'Der serielle Port wurde geschlossen.');
         });
