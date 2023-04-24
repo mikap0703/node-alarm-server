@@ -18,7 +18,12 @@ const config = new configChecker(configDir, logger);
 config.getYaml();
 
 const alarmhandler = new AlarmHandler(config.config, logger);
-alarmhandler.start()
+
+// Alarmhandler wird nach einem Timeout gestartet
+setTimeout(() => {
+    alarmhandler.start()
+}, alarmhandler.timeout);
+
 
 const frontend = new WebUI(dirname, 8112, logger)
 //frontend.start()
