@@ -60,14 +60,14 @@ class MailHandler {
             }
             else if (process.env.DEV_MODE == 1) { // DEV
                 this.logger.log('WARN', 'ACHTUNG - DEV-Modus aktiviert');
-                var f = this.connection.seq.fetch((box.messages.total - 5) + ':*', { bodies: '', struct: true });
+                let f = this.connection.seq.fetch((box.messages.total - 5) + ':*', { bodies: '', struct: true });
 
                 this.logger.log('INFO', `Warten auf neue Mails von ${this.alarmSender} mit dem Betreff ${this.alarmSubject}`);
 
                 f.on('message', (msg, seqno) => {
                     this.logger.log('INFO', '[MAIL] - ' + seqno);
                     msg.on('body', (stream) => {
-                        var buffer = '';
+                        let buffer = '';
                         stream.on('data', (chunk) => {
                             buffer += chunk.toString('utf8');
                         });
