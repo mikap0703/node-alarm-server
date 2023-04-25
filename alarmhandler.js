@@ -2,6 +2,7 @@ import DiveraHandler from './apiHandlers/diveraHandler.js';
 import AlamosHandler from './apiHandlers/alamosHandler.js';
 import MailHandler from "./emailHandler.js";
 import DMEHandler from "./dmeHandler.js";
+import axios from "axios";
 
 export default class AlarmHandler {
     constructor(config, logger) {
@@ -47,12 +48,29 @@ TEST-ILS-Einsatz Brand 1 Brand Container Kreuzung Sulzbacher Weg - Industriestra
         }
     }
 
-    handleAlarm(alarmInfo) {
+    handleAlarm(alarm) {
         if (!this.doTriggerAlarm) {
             this.logger.log('INFO', 'Alarm nicht ausgelöst - Weiterleitung deaktiviert');
         }
         else {
-            this.triggerAlarm(alarmInfo);
+            this.triggerAlarm(alarm);
+            if (alarm.data.webhooks !== []) {
+                for (let webhook of alarm.data.webhooks) {
+                    this.handleHook(webhook);
+                }
+            }
         }
+    }
+
+    handleHook(url) {
+        let data = ''
+        axios.get(url)
+            .then((res) => {
+                this.logger.log('INFO', `WebHook ${url} aufgerufen...Status ${res.status}`);
+            })
+            .catch((err) => {
+                this.logger.log('ERROR', `Fehler beim Aufrufen des WebHooks ${url}`);
+                this.logger.log('ERROR', this.logger.convertObject(err));
+            })
     }
 }
