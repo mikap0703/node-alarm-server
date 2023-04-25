@@ -138,8 +138,7 @@ class MailHandler {
             })
             .catch(err => {
                 this.logger.log('ERROR', `[#${seqno}] Fehler beim Parsen:`);
-                console.log(err)
-                this.logger.log('ERROR', this.logger.convertObject(err))
+                this.logger.log('ERROR', this.logger.convertObject(err));
             });
     }
 
@@ -166,50 +165,48 @@ class MailHandler {
                     result[key] = rowData;
                 }
             }
-
             return result;
         };
 
-        const tableData = extractTableData(html + text)
+        const tableData = extractTableData(html + text);
 
-        let alarm = new AlarmBuilder(this.logger)
+        let alarm = new AlarmBuilder(this.logger);
         alarm.applyTemplate(this.alarmTemplates['default']);
 
         // Einsatznummer - ID
-        let einsatznummer = tableData['Einsatznummer:']?.[0] || ''
-        alarm.data.id = einsatznummer.toString()
+        let einsatznummer = tableData['Einsatznummer:']?.[0] || '';
+        alarm.data.id = einsatznummer.toString();
 
         // Stichwort, Text und Einsatzobjekt
-        let stichwort = tableData['Einsatzstichwort:']?.[0] || ''
-        stichwort = this.stichwoerter[stichwort.toUpperCase()] || stichwort
-        let sachverhalt = tableData['Sachverhalt:']?.[0] || ''
-        let notfallgeschehen = tableData['Notfallgeschehen:']?.[0] || ''
+        let stichwort = tableData['Einsatzstichwort:']?.[0] || '';
+        stichwort = this.stichwoerter[stichwort.toUpperCase()] || stichwort;
+        let sachverhalt = tableData['Sachverhalt:']?.[0] || '';
+        let notfallgeschehen = tableData['Notfallgeschehen:']?.[0] || '';
 
-        let objekt = tableData['Objekt:']?.[0] || ''
-        alarm.data.address.object = objekt
+        let objekt = tableData['Objekt:']?.[0] || '';
+        alarm.data.address.object = objekt;
 
         if (notfallgeschehen !== '') {
             try {
-                alarm.data.title = notfallgeschehen.match(/\((.*?)\)/)[1]
+                alarm.data.title = notfallgeschehen.match(/\((.*?)\)/)[1];
             } catch {
-                alarm.data.title = notfallgeschehen
+                alarm.data.title = notfallgeschehen;
             }
         } else {
-            if (stichwort) alarm.data.title = stichwort
+            if (stichwort) alarm.data.title = stichwort;
         }
 
-        alarm.data.text = sachverhalt ? (objekt ? sachverhalt + ' - ' + objekt : sachverhalt) : objekt
+        alarm.data.text = sachverhalt ? (objekt ? sachverhalt + ' - ' + objekt : sachverhalt) : objekt;
 
         // Adresse
-        alarm.data.address.street = tableData['Strasse / Hs.-Nr.:']?.[0] || ''
+        alarm.data.address.street = tableData['Strasse / Hs.-Nr.:']?.[0] || '';
         if (alarm.data.address.street === '') {
-            alarm.data.address.street = tableData['Strasse:']?.[0] || ''
+            alarm.data.address.street = tableData['Strasse:']?.[0] || '';
         }
-        alarm.data.address.city = tableData['PLZ / Ort:']?.[0] || ''
-        alarm.data.address.info = tableData['Info:']?.[0] || ''
+        alarm.data.address.city = tableData['PLZ / Ort:']?.[0] || '';
+        alarm.data.address.info = tableData['Info:']?.[0] || '';
 
         // Einsatzvorlagen anwenden - Empfängergruppen und alarmierte Fahrzeuge
-        // TODO: gesamte Einsatzvorlage anwenden - nicht nur Empfängergruppen und alarmierte Fahrzeuge
         for (let keyword in this.alarmTemplateKeywords) {
             if (tableData[keyword]) {
                 // Keyword existiert in Alarm Mail
