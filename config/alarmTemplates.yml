@@ -1,14 +1,16 @@
 default:
-  members:
+  members: # Einzelne Personen, die dem Einsatz zugeordnet werden sollen
     - WehrführerID
 
 Musterstadt Vollalarm:
-  groups:
+  groups: # Gruppen, die dem Einsatz zugeordnet werden sollen
     - Mannschaft Gruppe
-  vehicles:
+  vehicles: # Fahrzeuge, die dem Einsatz zugeordnet werden sollen
     - FL MS 1/10
     - FL MS 1/31
     - FL MS 1/46
+  webhooks: # Webhooks, die ausgelöst werden sollen, z.B. Schranke mit Shelly Relais öffnen
+    - "http://192.168.178.112/relay/1"
 
 DLK:
   groups:
