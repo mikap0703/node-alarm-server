@@ -15,7 +15,8 @@ export default class AlarmBuilder {
             },
             "groups": [],
             "vehicles": [],
-            "members": []
+            "members": [],
+            "webhooks": []
         };
     }
 
@@ -33,6 +34,7 @@ export default class AlarmBuilder {
                 case 'groups':
                 case 'vehicles':
                 case 'members':
+                case 'webhooks':
                     this.data[key] = [...new Set([...this.data[key], ...template[key]])]
                     break;
             }
