@@ -70,7 +70,7 @@ export default class DMEHandler {
         console.log(msg)
         let alarm = new AlarmBuilder(this.logger);
 
-        // TODO: default Template anwenden
+        alarm.applyTemplate(this.alarmTemplates['default']);
 
         for(let keyword of this.config.alarmList){
             if(msg.includes(keyword)) {
@@ -87,10 +87,7 @@ export default class DMEHandler {
             this.logger.log('INFO', `DME Alarm angekommen - RIC ${ric} - kein AlarmTemplate gefunden!`);
         }
         else {
-            let templates = this.alarmTemplates[alarmTemplate];
-            for (let type in templates) {
-                alarm.addUnits(type, templates[type]);
-            }
+            alarm.applyTemplate(this.alarmTemplates[alarmTemplate]);
         }
         this.triggerAlarm(alarm);
     }
