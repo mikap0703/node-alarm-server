@@ -173,6 +173,7 @@ class MailHandler {
         const tableData = extractTableData(html + text)
 
         let alarm = new AlarmBuilder(this.logger)
+        alarm.applyTemplate(this.alarmTemplates['default']);
 
         // Einsatznummer - ID
         let einsatznummer = tableData['Einsatznummer:']?.[0] || ''
@@ -212,16 +213,13 @@ class MailHandler {
         for (let keyword in this.alarmTemplateKeywords) {
             if (tableData[keyword]) {
                 // Keyword existiert in Alarm Mail
-                let templates = this.alarmTemplates[this.alarmTemplateKeywords[keyword]];
-
-                for (const template in templates) {
-                    alarm.addUnits(template, templates[template])
-                }
+                let template = this.alarmTemplateKeywords[keyword];
+                alarm.applyTemplate(this.alarmTemplates[template]);
             }
         }
 
-        this.logger.log('INFO', this.logger.convertObject(alarm.data))
-        return alarm
+        this.logger.log('INFO', this.logger.convertObject(alarm.data));
+        return alarm;
     }
 }
 
