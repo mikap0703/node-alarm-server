@@ -22,4 +22,20 @@ export default class AlarmBuilder {
     addUnits(type, units) {
         this.data[type] = [...new Set([...this.data[type], ...units])]
     }
+
+    applyTemplate(template) {
+        for (let key in template) {
+            switch (key.toLowerCase()) {
+                case 'title':
+                case 'text':
+                    this.data[key] = template[key];
+                    break;
+                case 'groups':
+                case 'vehicles':
+                case 'members':
+                    this.data[key] = [...new Set([...this.data[key], ...template[key]])]
+                    break;
+            }
+        }
+    }
 }
