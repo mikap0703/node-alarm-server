@@ -4,6 +4,9 @@ api: "Divera/Alamos/..."
 # API-Key/Accessschlüssel
 apiKey: asdf1234
 
+# Start/Restart (bei Fehler) Timeout
+timeout: 5000
+
 # Serielles Schnittstelle aktivieren/deaktivieren
 serialDME: false
 
