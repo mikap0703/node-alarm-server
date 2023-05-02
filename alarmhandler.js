@@ -29,7 +29,7 @@ export default class AlarmHandler {
                 break;
         }
 
-        this.timeout = this.config.general.timeout;
+        this.timeout = 5000;
         this.logger.log('INFO', `Timeout - Alarmhandler wird in ${this.timeout / 1000} Sekunden gestartet`)
     }
 
