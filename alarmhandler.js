@@ -37,13 +37,18 @@ export default class AlarmHandler {
         if (this.config.general.mail) {
             this.mailHandler = new MailHandler(this.handleAlarm.bind(this), this.config.mail, this.config.alarmTemplates, this.logger);
             this.mailHandler.start();
+            this.mailHandler.connection.once('error', (err) => {
+                this.mailHandler = new MailHandler(this.handleAlarm.bind(this), this.config.mail, this.config.alarmTemplates, this.logger);
+                this.logger.log('ERROR', 'Connection error:', err);
+                //setTimeout(this.mailHandler.start, 2000);
+            });
         }
         if (this.config.general.serialDME) {
             this.dmeHandler = new DMEHandler(this.handleAlarm.bind(this), this.config.serialDME, this.config.alarmTemplates, this.logger);
             let testString = `11:11 11.11.22
 SU04 VA
 TEST-ILS-Einsatz Brand 1 Brand Container Kreuzung Sulzbacher Weg - Industriestraße Sulzbach Neuweiler`;
-            this.dmeHandler.handleData(testString);
+            //this.dmeHandler.handleData(testString);
             this.dmeHandler.start();
         }
     }
