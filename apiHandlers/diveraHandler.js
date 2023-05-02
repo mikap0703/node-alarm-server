@@ -63,14 +63,18 @@ export default class DiveraHandler {
     checkConnection() {
         axios.get('https://app.divera247.com/api/v2/pull/all?', { params: {
                 accesskey: this.apikey
-            }}).then((res) => {
-            this.logger.log('INFO', `Divera API erfolgreich authorisiert (${res.data.data.cluster.name})`)
-            let alarmNotificationSettings = res.data.data.cluster.settings.alarm_notification_primary
-            if (alarmNotificationSettings[0] != '') {
-                this.logger.log('INFO', `Es sind ${alarmNotificationSettings.length} Möglichkeiten zur Alarmierung hinterlegt: ${alarmNotificationSettings}`)
-            } else {
-                this.logger.log('WARN', `Es sind keine Kanäle zur Alarmierung eingerichtet. (Divera -> Verwaltung -> Meldungen -> Alarmierungen -> Über diese Kanäle alarmieren)`)
-            }
-        })
+            }})
+            .then((res) => {
+                this.logger.log('INFO', `Divera API erfolgreich authorisiert (${res.data.data.cluster.name})`)
+                let alarmNotificationSettings = res.data.data.cluster.settings.alarm_notification_primary
+                if (alarmNotificationSettings[0] != '') {
+                    this.logger.log('INFO', `Es sind ${alarmNotificationSettings.length} Möglichkeiten zur Alarmierung hinterlegt: ${alarmNotificationSettings}`)
+                } else {
+                    this.logger.log('WARN', `Es sind keine Kanäle zur Alarmierung eingerichtet. (Divera -> Verwaltung -> Meldungen -> Alarmierungen -> Über diese Kanäle alarmieren)`)
+                }
+            })
+            .catch((error) => {
+                this.logger.log('ERROR', 'Verbindung konnte nicht überprüft werden: ' + this.logger.convertObject(error));
+            });
     }
 }
