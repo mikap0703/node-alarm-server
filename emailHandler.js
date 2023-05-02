@@ -46,11 +46,6 @@ class MailHandler {
             this.logger.log('INFO', 'IMAP Login erfolgreich!');
             this.openInbox();
         });
-
-        this.connection.once('error', (err) => {
-            this.logger.log('ERROR', 'Connection error:', err);
-            setTimeout(this.start, 5000);
-        });
     }
 
     openInbox() {
