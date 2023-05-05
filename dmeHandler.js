@@ -2,11 +2,12 @@ import { SerialPort, ReadlineParser } from 'serialport';
 import AlarmBuilder from "./alarm.js";
 
 export default class DMEHandler {
-    constructor(triggerAlarm, dmeConfig, alarmTemplates, logger) {
-        this.triggerAlarm = triggerAlarm;
+    constructor(dmeConfig, alarmTemplates, logger, emitter) {
         this.config = dmeConfig;
         this.alarmTemplates = alarmTemplates;
         this.logger = logger;
+        this.emitter = emitter;
+
         this.path = this.config.port;
         this.baudrate = this.config.baudrate;
         this.port = new SerialPort({
@@ -25,6 +26,7 @@ export default class DMEHandler {
         this.port.open((err) => {
             if (err) {
                 this.logger.log('ERROR', 'Fehler beim Öffnen des seriellen Ports: ' + err.message);
+                this.emitter.emit('restartDmeHandler');
                 return;
             }
             this.logger.log('INFO', 'Serieller Port geöffnet: ' + this.path + ', Baudrate: ' + this.baudrate);
@@ -48,6 +50,7 @@ export default class DMEHandler {
 
         this.port.on('error', (err) => {
             this.logger.log('ERROR', 'Fehler beim Lesen des seriellen Ports: ' + err.message);
+            this.emitter.emit('restartDmeHandler');
         });
     }
 
@@ -89,6 +92,6 @@ export default class DMEHandler {
         else {
             alarm.applyTemplate(this.alarmTemplates[alarmTemplate]);
         }
-        this.triggerAlarm(alarm);
+        this.emitter.emit('alarm', alarm);
     }
 }

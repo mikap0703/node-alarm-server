@@ -7,7 +7,10 @@ import AlarmBuilder from "./alarm.js";
 config();
 
 class MailHandler {
-    constructor(triggerAlarm, mailConfig, alarmTemplates, logger) {
+    constructor(mailConfig, alarmTemplates, logger, emitter) {
+        this.logger = logger;
+        this.emitter = emitter;
+
         this.connection = new Imap({
             user: mailConfig.user,
             password: mailConfig.password,
@@ -36,8 +39,6 @@ class MailHandler {
                 this.mailParser = this.parseSecurCad;
                 break;
         }
-        this.triggerAlarm = triggerAlarm; // triggerAlarm aus apiHandler
-        this.logger = logger;
     }
 
     start() {
@@ -45,6 +46,11 @@ class MailHandler {
         this.connection.once('ready', () => {
             this.logger.log('INFO', 'IMAP Login erfolgreich!');
             this.openInbox();
+        });
+
+        this.connection.once('error', (err) => {
+            this.logger.log('ERROR', `Connection error: ${this.logger.convertObject(err)}`);
+            this.emitter.emit('restartMailHandler');
         });
     }
 
@@ -120,7 +126,7 @@ class MailHandler {
                     if (fromAddr === this.alarmSender || this.alarmSender === '*') {
                         if (subject === this.alarmSubject || this.alarmSubject === '*') {
                             this.logger.log('INFO', `[#${seqno}] Absender (${fromAddr}) und Betreff (${subject}) stimmen überein - Mail #${seqno} wird ausgewertet!`)
-                            this.triggerAlarm(this.mailParser(seqno, text, html));
+                            this.emitter.emit('alarm', this.mailParser(seqno, text, html));
                         }
                         else {
                             this.logger.log('INFO', `[#${seqno}] Falscher Betreff (${subject}) - Alarm wird nicht ausgelöst`);
@@ -209,8 +215,6 @@ class MailHandler {
                 alarm.applyTemplate(this.alarmTemplates[template]);
             }
         }
-
-        this.logger.log('INFO', this.logger.convertObject(alarm.data));
         return alarm;
     }
 }

@@ -5,9 +5,10 @@ import DMEHandler from "./dmeHandler.js";
 import axios from "axios";
 
 export default class AlarmHandler {
-    constructor(config, logger) {
+    constructor(config, logger, emitter) {
         this.config = config;
         this.logger = logger;
+        this.emitter = emitter;
 
         this.doTriggerAlarm = this.config.general.alarm;
 
@@ -34,30 +35,52 @@ export default class AlarmHandler {
     }
 
     async start() {
+        this.emitter.on('alarm', (alarm) => {
+            this.handleAlarm(alarm);
+        });
+
         if (this.config.general.mail) {
-            this.mailHandler = new MailHandler(this.handleAlarm.bind(this), this.config.mail, this.config.alarmTemplates, this.logger);
-            this.mailHandler.start();
-            this.mailHandler.connection.once('error', (err) => {
-                this.mailHandler = new MailHandler(this.handleAlarm.bind(this), this.config.mail, this.config.alarmTemplates, this.logger);
-                this.logger.log('ERROR', 'Connection error:', err);
-                //setTimeout(this.mailHandler.start, 2000);
+            let newMailHandler = () => {return new MailHandler(this.config.mail, this.config.alarmTemplates, this.logger, this.emitter)};
+            this.mailHandler = newMailHandler()
+
+            this.emitter.on('restartMailHandler', () => {
+                delete this.mailHandler;
+                setTimeout(() => {
+                    this.mailHandler = newMailHandler();
+                    this.mailHandler.start();
+                }, 2000);
             });
+
+            this.mailHandler.start();
         }
         if (this.config.general.serialDME) {
-            this.dmeHandler = new DMEHandler(this.handleAlarm.bind(this), this.config.serialDME, this.config.alarmTemplates, this.logger);
-            let testString = `11:11 11.11.22
+            let newDmeHandler = () => {return new DMEHandler(this.config.serialDME, this.config.alarmTemplates, this.logger, this.emitter)};
+            this.dmeHandler = newDmeHandler();
+            this.dmeHandler.start();
+
+            this.emitter.on('restartDmeHandler', () => {
+                delete this.dmeHandler;
+                setTimeout(() => {
+                    this.dmeHandler = newDmeHandler();
+                    this.dmeHandler.start();
+                }, 2000);
+            })
+        }
+    }
+
+    startDMEHandler() {
+        let testString = `11:11 11.11.22
 SU04 VA
 TEST-ILS-Einsatz Brand 1 Brand Container Kreuzung Sulzbacher Weg - Industriestraße Sulzbach Neuweiler`;
-            //this.dmeHandler.handleData(testString);
-            this.dmeHandler.start();
-        }
+        //this.dmeHandler.handleData(testString);
     }
 
     handleAlarm(alarm) {
         if (!this.doTriggerAlarm) {
-            this.logger.log('INFO', 'Alarm nicht ausgelöst - Weiterleitung deaktiviert');
+            this.logger.log('INFO', `Alarm nicht ausgelöst - Weiterleitung deaktiviert: ${this.logger.convertObject(alarm.data)}`);
         }
         else {
+            this.logger.log('INFO', `Alarm wird ausgelöst: ${this.logger.convertObject(alarm.data)}`);
             this.triggerAlarm(alarm);
             if (alarm.data.webhooks !== []) {
                 for (let webhook of alarm.data.webhooks) {
