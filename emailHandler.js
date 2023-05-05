@@ -47,6 +47,11 @@ class MailHandler {
             this.logger.log('INFO', 'IMAP Login erfolgreich!');
             this.openInbox();
         });
+
+        this.connection.once('error', (err) => {
+            this.logger.log('ERROR', `Connection error: ${this.logger.convertObject(err)}`);
+            this.emitter.emit('restartMailHandler');
+        });
     }
 
     openInbox() {
@@ -210,8 +215,6 @@ class MailHandler {
                 alarm.applyTemplate(this.alarmTemplates[template]);
             }
         }
-
-        this.logger.log('INFO', this.logger.convertObject(alarm.data));
         return alarm;
     }
 }
