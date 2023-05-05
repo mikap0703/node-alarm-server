@@ -126,7 +126,7 @@ class MailHandler {
                     if (fromAddr === this.alarmSender || this.alarmSender === '*') {
                         if (subject === this.alarmSubject || this.alarmSubject === '*') {
                             this.logger.log('INFO', `[#${seqno}] Absender (${fromAddr}) und Betreff (${subject}) stimmen überein - Mail #${seqno} wird ausgewertet!`)
-                            this.triggerAlarm(this.mailParser(seqno, text, html));
+                            this.emitter.emit('alarm', this.mailParser(seqno, text, html));
                         }
                         else {
                             this.logger.log('INFO', `[#${seqno}] Falscher Betreff (${subject}) - Alarm wird nicht ausgelöst`);
