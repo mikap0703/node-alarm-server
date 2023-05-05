@@ -72,6 +72,22 @@ TEST-ILS-Einsatz Brand 1 Brand Container Kreuzung Sulzbacher Weg - Industriestra
         }
     }
 
+    handleAlarm(alarm) {
+        if (!this.doTriggerAlarm) {
+            this.logger.log('INFO', 'Alarm nicht ausgelöst - Weiterleitung deaktiviert');
+        }
+        else {
+            this.triggerAlarm(alarm);
+            if (alarm.data.webhooks !== []) {
+                for (let webhook of alarm.data.webhooks) {
+                    this.handleHook(webhook);
+                }
+            }
+
+            this.logger.log('INFO', this.logger.convertObject(alarm.data));
+        }
+    }
+
     handleHook(url) {
         let data = ''
         axios.get(url)
