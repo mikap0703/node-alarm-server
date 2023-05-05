@@ -35,6 +35,10 @@ export default class AlarmHandler {
     }
 
     async start() {
+        this.emitter.on('alarm', (alarm) => {
+            this.handleAlarm(alarm);
+        });
+
         if (this.config.general.mail) {
             this.mailHandler = new MailHandler(this.handleAlarm.bind(this), this.config.mail, this.config.alarmTemplates, this.logger);
             this.mailHandler.start();
