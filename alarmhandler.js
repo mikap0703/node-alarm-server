@@ -54,27 +54,25 @@ export default class AlarmHandler {
             this.mailHandler.start();
         }
         if (this.config.general.serialDME) {
-            this.dmeHandler = new DMEHandler(this.handleAlarm.bind(this), this.config.serialDME, this.config.alarmTemplates, this.logger);
-            let testString = `11:11 11.11.22
-SU04 VA
-TEST-ILS-Einsatz Brand 1 Brand Container Kreuzung Sulzbacher Weg - Industriestraße Sulzbach Neuweiler`;
-            //this.dmeHandler.handleData(testString);
+            let newDmeHandler = () => {return new DMEHandler(this.config.serialDME, this.config.alarmTemplates, this.logger, this.emitter)};
+            this.dmeHandler = newDmeHandler();
             this.dmeHandler.start();
+
+            this.emitter.on('restartDmeHandler', () => {
+                delete this.dmeHandler;
+                setTimeout(() => {
+                    this.dmeHandler = newDmeHandler();
+                    this.dmeHandler.start();
+                }, 2000);
+            })
         }
     }
 
-    handleAlarm(alarm) {
-        if (!this.doTriggerAlarm) {
-            this.logger.log('INFO', 'Alarm nicht ausgelöst - Weiterleitung deaktiviert');
-        }
-        else {
-            this.triggerAlarm(alarm);
-            if (alarm.data.webhooks !== []) {
-                for (let webhook of alarm.data.webhooks) {
-                    this.handleHook(webhook);
-                }
-            }
-        }
+    startDMEHandler() {
+        let testString = `11:11 11.11.22
+SU04 VA
+TEST-ILS-Einsatz Brand 1 Brand Container Kreuzung Sulzbacher Weg - Industriestraße Sulzbach Neuweiler`;
+        //this.dmeHandler.handleData(testString);
     }
 
     handleAlarm(alarm) {

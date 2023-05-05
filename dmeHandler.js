@@ -26,6 +26,7 @@ export default class DMEHandler {
         this.port.open((err) => {
             if (err) {
                 this.logger.log('ERROR', 'Fehler beim Öffnen des seriellen Ports: ' + err.message);
+                this.emitter.emit('restartDmeHandler');
                 return;
             }
             this.logger.log('INFO', 'Serieller Port geöffnet: ' + this.path + ', Baudrate: ' + this.baudrate);
@@ -49,6 +50,7 @@ export default class DMEHandler {
 
         this.port.on('error', (err) => {
             this.logger.log('ERROR', 'Fehler beim Lesen des seriellen Ports: ' + err.message);
+            this.emitter.emit('restartDmeHandler');
         });
     }
 
