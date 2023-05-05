@@ -5,9 +5,10 @@ import DMEHandler from "./dmeHandler.js";
 import axios from "axios";
 
 export default class AlarmHandler {
-    constructor(config, logger) {
+    constructor(config, logger, emitter) {
         this.config = config;
         this.logger = logger;
+        this.emitter = emitter;
 
         this.doTriggerAlarm = this.config.general.alarm;
 

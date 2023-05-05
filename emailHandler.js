@@ -7,7 +7,10 @@ import AlarmBuilder from "./alarm.js";
 config();
 
 class MailHandler {
-    constructor(triggerAlarm, mailConfig, alarmTemplates, logger) {
+    constructor(mailConfig, alarmTemplates, logger, emitter) {
+        this.logger = logger;
+        this.emitter = emitter;
+
         this.connection = new Imap({
             user: mailConfig.user,
             password: mailConfig.password,
@@ -36,8 +39,6 @@ class MailHandler {
                 this.mailParser = this.parseSecurCad;
                 break;
         }
-        this.triggerAlarm = triggerAlarm; // triggerAlarm aus apiHandler
-        this.logger = logger;
     }
 
     start() {

@@ -2,11 +2,12 @@ import { SerialPort, ReadlineParser } from 'serialport';
 import AlarmBuilder from "./alarm.js";
 
 export default class DMEHandler {
-    constructor(triggerAlarm, dmeConfig, alarmTemplates, logger) {
-        this.triggerAlarm = triggerAlarm;
+    constructor(dmeConfig, alarmTemplates, logger, emitter) {
         this.config = dmeConfig;
         this.alarmTemplates = alarmTemplates;
         this.logger = logger;
+        this.emitter = emitter;
+
         this.path = this.config.port;
         this.baudrate = this.config.baudrate;
         this.port = new SerialPort({
