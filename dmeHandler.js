@@ -90,6 +90,6 @@ export default class DMEHandler {
         else {
             alarm.applyTemplate(this.alarmTemplates[alarmTemplate]);
         }
-        this.triggerAlarm(alarm);
+        this.emitter.emit('alarm', alarm);
     }
 }
