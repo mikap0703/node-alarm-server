@@ -46,6 +46,18 @@ class MailHandler {
         this.connection.once('ready', () => {
             this.logger.log('INFO', 'IMAP Login erfolgreich!');
             this.openInbox();
+            let n = 5; // n Mails werden nach dem Start des Programms abgerufen
+            if (n === 0) {
+                this.logger.log('INFO', `Keine Mails werden abgerufen und ausgewertet`);
+            }
+            else if (n === 1) {
+                this.logger.log('INFO', `${n} Mail wird abgerufen und ausgewertet`);
+            }
+            else {
+                this.logger.log('INFO', `${n} Mails wird abgerufen und ausgewertet`);
+            }
+
+            this.fetchnMails(1);
         });
 
         this.connection.once('error', (err) => {
@@ -54,16 +66,14 @@ class MailHandler {
         });
     }
 
-    openInbox() {
+    fetchnMails(n) {
         this.connection.openBox('INBOX', true, (err, box) => {
             if (err) {
                 this.logger.log('ERROR', err);
             }
-            else if (process.env.DEV_MODE == 1) { // DEV
-                this.logger.log('WARN', 'ACHTUNG - DEV-Modus aktiviert');
-                let f = this.connection.seq.fetch((box.messages.total - 5) + ':*', { bodies: '', struct: true });
-
-                this.logger.log('INFO', `Warten auf neue Mails von ${this.alarmSender} mit dem Betreff ${this.alarmSubject}`);
+            else {
+                n -= 1;
+                let f = this.connection.seq.fetch((box.messages.total - n) + ':*', { bodies: '', struct: true });
 
                 f.on('message', (msg, seqno) => {
                     this.logger.log('INFO', '[MAIL] - ' + seqno);
@@ -81,32 +91,21 @@ class MailHandler {
                 f.once('error', (err) => {
                     this.logger.log('ERROR', err);
                 });
-
             }
+        });
+    }
 
+    openInbox() {
+        this.connection.openBox('INBOX', true, (err, box) => {
+            if (err) {
+                this.logger.log('ERROR', err);
+            }
             else {
                 this.logger.log('INFO', `Warten auf neue Mails von ${this.alarmSender} mit dem Betreff ${this.alarmSubject}`);
 
                 this.connection.on('mail', () => {
                     this.logger.log('INFO', 'Neue Mail! Beginne mit Auswertung...');
-                    let f = this.connection.seq.fetch(box.messages.total + ':*', { bodies: '', struct: true });
-
-                    f.on('message', (msg, seqno) => {
-                        this.logger.log('INFO', '[MAIL] - ' + seqno);
-                        msg.on('body', (stream) => {
-                            let buffer = '';
-                            stream.on('data', (chunk) => {
-                                buffer += chunk.toString('utf8');
-                            });
-                            stream.once('end', () => {
-                                this.evalMail(buffer, seqno);
-                            });
-                        });
-                    });
-
-                    f.once('error', (err) => {
-                        this.logger.log('ERROR', err);
-                    });
+                    this.fetchnMails(1);
                 });
             }
         });
