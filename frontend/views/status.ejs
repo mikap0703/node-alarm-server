@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Service Status</title>
+    <style>
+        .status-circle {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .status-circle-green {
+            background-color: green;
+        }
+        .status-circle-red {
+            background-color: red;
+        }
+        .status-circle-orange {
+            background-color: orange;
+        }
+        .status-text {
+            font-weight: bold;
+            text-transform: capitalize;
+        }
+        .status-text-running {
+            color: green;
+        }
+        .status-text-down {
+            color: red;
+        }
+        .status-text-deactivated {
+            color: orange;
+        }
+    </style>
+</head>
+<script>
+    function getStatusCircleClass(status) {
+        if (status === -1) {
+            return 'status-circle-red';
+        } else if (status === 0) {
+            return 'status-circle-orange';
+        } else {
+            return 'status-circle-green';
+        }
+    }
+    function getStatusTextClass(status) {
+        if (status === -1) {
+            return 'status-text-down';
+        } else if (status === 0) {
+            return 'status-text-deactivated';
+        } else {
+            return 'status-text-running';
+        }
+    }
+    function getStatusText(status) {
+        if (status === -1) {
+            return 'down';
+        } else if (status === 0) {
+            return 'deactivated';
+        } else {
+            return 'running';
+        }
+    }
+</script>
+<body>
+<h1>Service Status</h1>
+<ul>
+    <li>
+        <span class="status-circle <%= getStatusCircleClass(mailService.status) %>"></span>
+        <span class="status-text <%= getStatusTextClass(mailService.status) %>">mailService: <%= getStatusText(mailService.status) %></span>
+    </li>
+    <li>
+        <span class="status-circle <%= getStatusCircleClass(dmeService.status) %>"></span>
+        <span class="status-text <%= getStatusTextClass(dmeService.status) %>">dmeService: <%= getStatusText(dmeService.status) %></span>
+    </li>
+    <li>
+        <span class="status-circle <%= getStatusCircleClass(network.status) %>"></span>
+        <span class="status-text <%= getStatusTextClass(network.status) %>">network: <%= getStatusText(network.status) %></span>
+    </li>
+</ul>
+</body>
+</html>

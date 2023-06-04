@@ -31,55 +31,38 @@ function readLogFile(filePath, cb) {
 }
 
 export default class WebUI{
-    constructor(dirname, port, logger) {
+    constructor(dirname, port, logger, emitter) {
         this.dirname = dirname;
         this.port = port;
         this.logger = logger;
+        this.emitter = emitter;
+        this.serviceStatus = {};
+
         this.logDir = path.join(this.dirname, 'logs');
         this.tail = "";
 
-        const app = express();
-        app.use(express.static(dirname + '/frontend'));
-        this.server = http.createServer(app);
-        this.io = new Server(this.server);
+        this.app = express();
+        this.app.set('view engine', 'ejs');
+        this.app.set('views', path.join(dirname, 'frontend', 'views'));
+
+        this.emitter.on('serviceStatus', (data) => this.serviceStatus = data);
     }
 
     start(){
-        this.io.on('connection', async(socket) => {
-            this.logger.log('INFO', 'Socket connected: ' + socket.id);
-
-            try {
-                const logFiles = await getLogFiles(this.logDir);
-                socket.emit('logFiles', logFiles);
-            } catch (err) {
-                console.error('Error getting log files:', err);
-            }
-
-            socket.on('selectLog', (filename) => {
-                let logfile = path.join(this.logDir, filename);
-                console.log('Selected log file: ' + logfile);
-                try {
-                    this.tail.unwatch();
-                } catch (err) {}
-
-                this.tail = new Tail(logfile);
-
-                readLogFile(logfile, (content) => {
-                    socket.emit('logContent', content);
-                });
-
-                this.tail.on('line', (line) => {
-                    console.log(line)
-                    socket.emit('logEntry', line);
-                });
-
-                this.tail.on('error', (error) => {
-                    console.error(error);
-                });
-
+        this.app.get('/', (req, res) => {
+            const mailService = 1
+            const dmeService = -1
+            const network = 0
+            res.render('status', {
+                mailService: mailService,
+                dmeService: dmeService,
+                network: network
             });
         });
-        this.server.listen(this.port, () => {
+
+        this.app.get()
+
+        this.app.listen(this.port, () => {
             console.log('Server listening on port ' + this.port);
         });
     }
