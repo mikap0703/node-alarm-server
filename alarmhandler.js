@@ -68,13 +68,6 @@ export default class AlarmHandler {
         }
     }
 
-    startDMEHandler() {
-        let testString = `11:11 11.11.22
-SU04 VA
-TEST-ILS-Einsatz Brand 1 Brand Container Kreuzung Sulzbacher Weg - Industriestraße Sulzbach Neuweiler`;
-        //this.dmeHandler.handleData(testString);
-    }
-
     handleAlarm(alarm) {
         if (!this.doTriggerAlarm) {
             this.logger.log('INFO', `Alarm nicht ausgelöst - Weiterleitung deaktiviert: ${this.logger.convertObject(alarm.data)}`);
