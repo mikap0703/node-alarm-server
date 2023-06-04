@@ -28,5 +28,5 @@ setTimeout(() => {
 }, alarmhandler.timeout);
 
 
-const frontend = new WebUI(dirname, 8112, logger)
-//frontend.start()
+const frontend = new WebUI(dirname, 8112, logger, emitter)
+frontend.start()
