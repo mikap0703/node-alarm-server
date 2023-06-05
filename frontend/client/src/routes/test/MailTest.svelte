@@ -11,7 +11,12 @@
     let sender, subject, content, open, responsePromise;
 
     const fetchData = async () => {
-        const response = await fetch('https://dog.ceo/api/breeds/image/random')
+        const response = await fetch('/test/mail', {
+            method: 'POST',
+            body: JSON.stringify({
+                "foo": "hello"
+            })
+        });
         return response.json()
     }
 </script>
