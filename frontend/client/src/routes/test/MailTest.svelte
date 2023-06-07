@@ -11,14 +11,28 @@
     let sender, subject, content, open, responsePromise;
 
     const fetchData = async () => {
-        const response = await fetch('/test/mail', {
+        console.log(sender);
+        fetch("http://localhost:8113/api/v1/test/mail", {
             method: 'POST',
+            headers:{
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({
-                "foo": "hello"
+                "sender": sender,
+                "subject": subject,
+                "content": content
             })
-        });
-        return response.json()
-    }
+        })
+            .then(response => {
+                console.log(response)
+                response.json()
+                    .then(json => {
+                        console.log(json)
+                        return json
+                    })
+                    .catch(error => console.log(error))
+            })
+    };
 </script>
 
 <div>
@@ -27,7 +41,6 @@
             on:submit={async (e) => {
                 e.preventDefault();
                 open = true;
-                console.log(sender, subject, content);
 
                 responsePromise = fetchData();
         }}>
@@ -64,6 +77,7 @@
 
         <Button kind="danger" type="submit">"Absenden"</Button>
     </Form>
+    <!--
     <Modal
             bind:open
             passiveModal
@@ -75,4 +89,5 @@
     >
         <TestServerAnswer promise={responsePromise}/>
     </Modal>
+    -->
 </div>
