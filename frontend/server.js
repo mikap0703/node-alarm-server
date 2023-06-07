@@ -1,12 +1,10 @@
-import path from "path";
 import { handler } from "./client/build/handler.js"
-import fs from "fs";
 import express, { Router } from "express";
 import bodyParser from "body-parser";
+import cors from "cors";
 
 export default class WebUI{
     constructor(dirname, webUIPort, apiPort, logger, emitter) {
-        this.dirname = dirname;
         this.webUIPort = webUIPort;
         this.apiPort = apiPort;
         this.logger = logger;
@@ -17,6 +15,7 @@ export default class WebUI{
         this.web.use(handler);
 
         this.api = express();
+        this.api.use(cors());
         this.api.use(bodyParser.json());
 
     }
@@ -28,11 +27,6 @@ export default class WebUI{
         });
 
         // API - routes that live separately from the SvelteKit app
-
-        this.api.listen(this.apiPort, () => {
-            console.log('API listening on port ' + this.apiPort);
-        });
-
         const v1Router = Router();
         this.api.use("/api/v1", v1Router);
 
@@ -41,9 +35,10 @@ export default class WebUI{
         });
 
         v1Router.post("/test/:type", (req, res) => {
+            let data;
             switch (req.params.type) {
                 case "mail":
-                    let data = req.body;
+                    data = req.body;
                     this.emitter.emit('mailData', {
                         id: 4711,
                         sender: data.sender,
@@ -52,9 +47,19 @@ export default class WebUI{
                         date: Date.now()
                     })
                     break;
+                case "dme":
+                    data = req.body;
+                    this.emitter.emit('dmeData', {
+                        content: data.content,
+                    })
+                    break;
             }
 
-            res.send(req.body)
+            res.status(200).send({status: "ok"});
+        });
+
+        this.api.listen(this.apiPort, () => {
+            console.log('API listening on port ' + this.apiPort);
         });
 
     }
