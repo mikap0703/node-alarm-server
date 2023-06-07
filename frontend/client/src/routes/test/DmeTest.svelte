@@ -4,9 +4,22 @@
     let content, open, responsePromise;
 
     const fetchData = async () => {
-        const response = await fetch('https://dog.ceo/api/breeds/image/random')
-        return response.json()
-    }
+        fetch("http://localhost:8113/api/v1/test/dme", {
+            method: 'POST',
+            body: JSON.stringify({
+                "content": "content"
+            })
+        })
+            .then(response => {
+                console.log(response)
+                response.json()
+                    .then(json => {
+                        console.log("json")
+                        return json
+                    })
+                    .catch(error => console.log(error))
+            })
+    };
 </script>
 
 <div>
@@ -16,7 +29,6 @@
             on:submit={(e) => {
                 e.preventDefault();
                 open = true;
-                console.log(content);
 
                 responsePromise = fetchData();
             }}>
@@ -37,6 +49,7 @@
 
         <Button kind="danger" type="submit">"Auslösen"</Button>
     </Form>
+    <!--
     <Modal
             bind:open
             passiveModal
@@ -48,5 +61,6 @@
     >
         <TestServerAnswer promise={responsePromise}/>
     </Modal>
+    -->
 </div>
 
