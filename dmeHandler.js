@@ -37,7 +37,7 @@ export default class DMEHandler {
             console.log(data);
             data = data.replace(/[^\x00-\x7F]/g, '');
             // Verarbeitet die empfangenen Daten
-            this.handleData(data);
+            this.handleDMEData(data);
         });
 
         this.port.on('data', (data) => {
@@ -50,7 +50,6 @@ export default class DMEHandler {
 
         this.port.on('error', (err) => {
             this.logger.log('ERROR', 'Fehler beim Lesen des seriellen Ports: ' + err.message);
-            this.emitter.emit('restartDmeHandler');
         });
     }
 
@@ -64,7 +63,7 @@ export default class DMEHandler {
         });
     }
 
-    handleData(dmeContent) {
+    handleDMEData(dmeContent) {
         console.log(dmeContent);
         const [date, ric, msg] = dmeContent.split(/\r?\n|\r|\n/g).slice(-3);
 

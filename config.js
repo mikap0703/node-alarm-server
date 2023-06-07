@@ -1,4 +1,3 @@
-import * as yup from 'yup';
 import YAML from 'yaml';
 import path from "path";
 import fs from "fs";

@@ -46,18 +46,6 @@ class MailHandler {
         this.connection.once('ready', () => {
             this.logger.log('INFO', 'IMAP Login erfolgreich!');
             this.openInbox();
-            let n = 5; // n Mails werden nach dem Start des Programms abgerufen
-            if (n === 0) {
-                this.logger.log('INFO', `Keine Mails werden abgerufen und ausgewertet`);
-            }
-            else if (n === 1) {
-                this.logger.log('INFO', `${n} Mail wird abgerufen und ausgewertet`);
-            }
-            else {
-                this.logger.log('INFO', `${n} Mails wird abgerufen und ausgewertet`);
-            }
-
-            this.fetchnMails(1);
         });
 
         this.connection.once('error', (err) => {
@@ -118,23 +106,7 @@ class MailHandler {
                 let fromAddr = from.value[0].address;
                 let mailDate = new Date(date);
 
-                if ((Date.now() - mailDate) / 1000 > this.maxAge) {
-                    this.logger.log('INFO', `[#${seqno}] Mail zu alt (${mailDate.toLocaleDateString()}) - Alarm wird nicht ausgelöst`);
-                }
-                else {
-                    if (fromAddr === this.alarmSender || this.alarmSender === '*') {
-                        if (subject === this.alarmSubject || this.alarmSubject === '*') {
-                            this.logger.log('INFO', `[#${seqno}] Absender (${fromAddr}) und Betreff (${subject}) stimmen überein - Mail #${seqno} wird ausgewertet!`)
-                            this.emitter.emit('alarm', this.mailParser(seqno, text, html));
-                        }
-                        else {
-                            this.logger.log('INFO', `[#${seqno}] Falscher Betreff (${subject}) - Alarm wird nicht ausgelöst`);
-                        }
-                    }
-                    else {
-                        this.logger.log('INFO', `[#${seqno}] Falscher Absender (${fromAddr}) - Alarm wird nicht ausgelöst`);
-                    }
-                }
+                this.handleMailData(seqno, fromAddr, subject, html + text, mailDate);
             })
             .catch(err => {
                 this.logger.log('ERROR', `[#${seqno}] Fehler beim Parsen:`);
@@ -142,7 +114,27 @@ class MailHandler {
             });
     }
 
-    parseSecurCad(seqno, text, html) {
+    handleMailData(id, sender, subject, content, date) {
+        if ((Date.now() - date) / 1000 > this.maxAge) {
+            this.logger.log('INFO', `[#${id}] Mail zu alt (${date.toLocaleDateString()}) - Alarm wird nicht ausgelöst`);
+        }
+        else {
+            if (sender === this.alarmSender || this.alarmSender === '*') {
+                if (subject === this.alarmSubject || this.alarmSubject === '*') {
+                    this.logger.log('INFO', `[#${id}] Absender (${sender}) und Betreff (${subject}) stimmen überein - Mail #${id} wird ausgewertet!`)
+                    this.emitter.emit('alarm', this.mailParser(id, content));
+                }
+                else {
+                    this.logger.log('INFO', `[#${id}] Falscher Betreff (${subject}) - Alarm wird nicht ausgelöst`);
+                }
+            }
+            else {
+                this.logger.log('INFO', `[#${id}] Falscher Absender (${sender}) - Alarm wird nicht ausgelöst`);
+            }
+        }
+    }
+
+    parseSecurCad(seqno, content) {
         const extractTableData = (htmlString) => {
             const dom = new JSDOM(htmlString);
             const tables = dom.window.document.getElementsByTagName("table");
@@ -168,7 +160,7 @@ class MailHandler {
             return result;
         };
 
-        const tableData = extractTableData(html + text);
+        const tableData = extractTableData(content);
 
         let alarm = new AlarmBuilder(this.logger);
         alarm.applyTemplate(this.alarmTemplates['default']);

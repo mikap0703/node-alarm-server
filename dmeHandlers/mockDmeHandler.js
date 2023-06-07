@@ -35,7 +35,7 @@ export default class DMEHandler {
             data = data.replace(/[^\x00-\x7F]/g, '');
             const dataArray = data.split(/\s{2,}/);
             // Verarbeitet die empfangenen Daten
-            this.handleData(dataArray);
+            this.handleDMEData(dataArray);
         });
 
         this.port.on('close', () => {
