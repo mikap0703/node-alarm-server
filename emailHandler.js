@@ -46,26 +46,12 @@ class MailHandler {
         this.connection.once('ready', () => {
             this.logger.log('INFO', 'IMAP Login erfolgreich!');
             this.openInbox();
-            let n = 5; // n Mails werden nach dem Start des Programms abgerufen
-            if (n === 0) {
-                this.logger.log('INFO', `Keine Mails werden abgerufen und ausgewertet`);
-            }
-            else if (n === 1) {
-                this.logger.log('INFO', `${n} Mail wird abgerufen und ausgewertet`);
-            }
-            else {
-                this.logger.log('INFO', `${n} Mails wird abgerufen und ausgewertet`);
-            }
         });
 
         this.connection.once('error', (err) => {
             this.logger.log('ERROR', `Connection error: ${this.logger.convertObject(err)}`);
             this.emitter.emit('restartMailHandler');
         });
-
-        this.emitter.on('mailData', (data) => {
-            this.handleMailData(data.id, data.sender, data.subject, data.content, data.date);
-        })
     }
 
     fetchnMails(n) {
