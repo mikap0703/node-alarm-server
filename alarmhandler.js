@@ -34,7 +34,7 @@ export default class AlarmHandler {
         this.logger.log('INFO', `Timeout - Alarmhandler wird in ${this.timeout / 1000} Sekunden gestartet`)
     }
 
-    async start() {
+    start() {
         this.emitter.on('alarm', (alarm) => {
             this.handleAlarm(alarm);
         });
@@ -42,6 +42,7 @@ export default class AlarmHandler {
         if (this.config.general.mail) {
             let newMailHandler = () => {return new MailHandler(this.config.mail, this.config.alarmTemplates, this.logger, this.emitter)};
             this.mailHandler = newMailHandler()
+            this.mailHandler.start();
 
             this.emitter.on('restartMailHandler', () => {
                 delete this.mailHandler;
@@ -51,7 +52,9 @@ export default class AlarmHandler {
                 }, 2000);
             });
 
-            this.mailHandler.start();
+            this.emitter.on('mailData', (data) => {
+                this.mailHandler.handleMailData(data.id, data.sender, data.subject, data.content, data.date);
+            })
         }
         if (this.config.general.serialDME) {
             let newDmeHandler = () => {return new DMEHandler(this.config.serialDME, this.config.alarmTemplates, this.logger, this.emitter)};
@@ -64,6 +67,11 @@ export default class AlarmHandler {
                     this.dmeHandler = newDmeHandler();
                     this.dmeHandler.start();
                 }, 2000);
+            })
+
+            this.emitter.on('dmeData', (data) => {
+                console.log(data)
+                this.dmeHandler.handleDMEData(data.content);
             })
         }
     }
