@@ -1,13 +1,14 @@
 <script>
     import {CodeSnippet, Modal} from "carbon-components-svelte";
 
-    export let promise;
+    export let data;
 </script>
 
-{#await promise}
+{#await data}
     <CodeSnippet type="multi" skeleton />
 {:then number}
-    <CodeSnippet type="multi" {promise} />
+    <h1>{data}</h1>
+    <CodeSnippet type="multi" {data} />
 {:catch error}
     <p style="color: red">{error.message}</p>
 {/await}
