@@ -46,6 +46,7 @@ export default class WebUI{
                         content: data.content,
                         date: Date.now()
                     })
+
                     break;
                 case "dme":
                     data = req.body;
