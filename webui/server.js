@@ -1,34 +1,23 @@
-import { handler } from "./client/build/handler.js"
 import express, { Router } from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 
 export default class WebUI{
-    constructor(dirname, webUIPort, apiPort, logger, emitter) {
-        this.webUIPort = webUIPort;
-        this.apiPort = apiPort;
+    constructor(dirname, port, logger, emitter) {
+        this.port = port;
         this.logger = logger;
         this.emitter = emitter;
 
-        this.web = express();
-        // let SvelteKit handle everything else, including serving prerendered pages and static assets
-        this.web.use(handler);
-
-        this.api = express();
-        this.api.use(cors());
-        this.api.use(bodyParser.json());
+        this.app = express();
+        this.app.use(cors());
+        this.app.use(bodyParser.json());
 
     }
 
     start(){
-        // WebUI
-        this.web.listen(this.webUIPort, () => {
-            console.log('WebUI listening on port ' + this.webUIPort);
-        });
-
-        // API - routes that live separately from the SvelteKit app
+        // API
         const v1Router = Router();
-        this.api.use("/api/v1", v1Router);
+        this.app.use("/api/v1", v1Router);
 
         v1Router.get("/healthcheck", (req, res) => {
             res.end('ok');
@@ -59,7 +48,7 @@ export default class WebUI{
             res.status(200).send({status: "ok"});
         });
 
-        this.api.listen(this.apiPort, () => {
+        this.app.listen(this.port, () => {
             console.log('API listening on port ' + this.apiPort);
         });
 
