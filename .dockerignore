@@ -6,4 +6,4 @@ npm-debug.log
 /prod-config/
 /config/
 /logs/
-/webui/client
+/webui/client/
