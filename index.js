@@ -3,7 +3,7 @@ import {fileURLToPath} from "url";
 import path from "path";
 import configChecker from "./config.js";
 import Logger from "./logger.js";
-import WebUI from "./frontend/server.js";
+import WebUI from "./webui/server.js";
 import { EventEmitter } from 'node:events';
 
 const filename = fileURLToPath(import.meta.url);
