@@ -6,7 +6,6 @@
   "type": "module",
   "scripts": {
     "start": "node index.js",
-    "build-webui": "npm --prefix ./frontend/client install && npm --prefix ./frontend/client run build",
     "config": "node config.js"
   },
   "keywords": [],
