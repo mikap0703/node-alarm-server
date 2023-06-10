@@ -1,6 +1,14 @@
 import express, { Router } from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
+import bcrypt from "bcrypt";
+import { Low } from 'lowdb'
+import { JSONFile } from 'lowdb/node'
+import { join } from "path";
+import { expressjwt } from "express-jwt";
+import 'dotenv/config'
+import jwt from "jsonwebtoken";
+
 
 export default class WebUI{
     constructor(dirname, port, logger, emitter) {
@@ -8,26 +16,82 @@ export default class WebUI{
         this.logger = logger;
         this.emitter = emitter;
 
+        const file = join(dirname, "db", 'users.json');
+        const adapter = new JSONFile(file)
+        const defaultData = { users: [] }
+        this.userDB = new Low(adapter, defaultData)
+
         this.app = express();
+
+        this.v1Router = Router();
+
         this.app.use(cors());
         this.app.use(bodyParser.json());
-
+        this.app.use("/api/v1", this.v1Router);
     }
 
-    start(){
+    async start() {
+        await this.userDB.read();
         // API
-        const v1Router = Router();
-        this.app.use("/api/v1", v1Router);
-
-        v1Router.get("/healthcheck", (req, res) => {
+        this.v1Router.get("/healthcheck", (req, res) => {
             res.end('ok');
         });
 
-        v1Router.post("/test/:type", (req, res) => {
-            let data;
+        this.v1Router.post('/auth/login', async (req, res) => {
+            await this.userDB.read()
+            let data = req.body;
+            let user = {}
+
+            for (let i = 0; i < this.userDB.data.users.length; i++) {
+                if (this.userDB.data.users[i].username === data.username) {
+                    user = this.userDB.data.users[i];
+                }
+            }
+
+            if (user === {}) {
+                res.status(401).send();
+            }
+
+            bcrypt.compare(data.password, user.password, function (err, result) {
+                if (result) {
+                }
+            });
+        })
+
+        this.v1Router.post('/auth/signup', async (req, res) => {
+            await this.userDB.read();
+            let data = req.body;
+
+            for (let i = 0; i < this.userDB.data.users.length; i++) {
+                if (this.userDB.data.users[i].username === data.username) {
+                    return res.status(409).send({"msg": `Username ${data.username} already exists`});
+                }
+            }
+
+            if (data.adminSecret === process.env.API_ADMIN_SECRET) {
+                bcrypt.hash(data.password, 10, async (err, hash) => {
+                    if (err) {
+                        this.logger.log("Error", err)
+                    } else {
+                        this.userDB.data.users.push({
+                            "username": data.username,
+                            "password": hash
+                        })
+
+                        await this.userDB.write();
+                        let token = jwt.sign({
+                            "username": data.username
+                        }, process.env.API_ADMIN_SECRET, { expiresIn: '5d' });
+                        return res.status(200).send({"msg": `Erfolgreich als ${data.username} angemeldet!`, "token": token});
+                    }
+                });
+            }
+        })
+
+        this.v1Router.post("/test/:type", this.authenticateToken, (req, res) => {
+            let data = req.body;
             switch (req.params.type) {
                 case "mail":
-                    data = req.body;
                     this.emitter.emit('mailData', {
                         id: 4711,
                         sender: data.sender,
@@ -38,7 +102,6 @@ export default class WebUI{
 
                     break;
                 case "dme":
-                    data = req.body;
                     this.emitter.emit('dmeData', {
                         content: data.content,
                     })
@@ -49,10 +112,22 @@ export default class WebUI{
         });
 
         this.app.listen(this.port, () => {
-            console.log('API listening on port ' + this.apiPort);
+            this.logger.log("INFO", "API listening on port " + this.port);
         });
-
     }
 
+    async authenticateToken (req, res, next) {
+        await this.userDB.read();
+        const token = req.headers["authorization"];
 
+        if (token == null) return res.sendStatus(401)
+
+        jwt.verify(token, process.env.API_ADMIN_SECRET, (err, user) => {
+            if (err) return res.sendStatus(403)
+
+            req.user = user
+
+            next()
+        })
+    }
 }
