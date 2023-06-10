@@ -5,7 +5,6 @@ import bcrypt from "bcrypt";
 import { Low } from 'lowdb'
 import { JSONFile } from 'lowdb/node'
 import { join } from "path";
-import { expressjwt } from "express-jwt";
 import 'dotenv/config'
 import jwt from "jsonwebtoken";
 
