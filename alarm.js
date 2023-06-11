@@ -16,7 +16,17 @@ export default class AlarmBuilder {
             "groups": [],
             "vehicles": [],
             "members": [],
-            "webhooks": []
+            "webhooks": [],
+            "mailData": {
+                "id": "",
+                "sender": "",
+                "subject": "",
+                "content": "",
+                "date": ""
+            },
+            "dmeData": {
+                "content": ""
+            }
         };
     }
 
