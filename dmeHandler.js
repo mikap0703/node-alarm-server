@@ -91,6 +91,8 @@ export default class DMEHandler {
         else {
             alarm.applyTemplate(this.alarmTemplates[alarmTemplate]);
         }
+
+        alarm.data.dmeData.content = dmeContent;
         this.emitter.emit('alarm', alarm);
     }
 }
