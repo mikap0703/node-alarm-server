@@ -90,6 +90,7 @@ export default class WebUI{
 
         this.v1Router.post("/test/:type", this.authenticateToken, (req, res) => {
             let data = req.body;
+
             switch (req.params.type) {
                 case "mail":
                     this.emitter.emit('mailData', {
@@ -103,7 +104,7 @@ export default class WebUI{
                     break;
                 case "dme":
                     this.emitter.emit('dmeData', {
-                        content: data.content,
+                        content: data.content
                     })
                     break;
             }
