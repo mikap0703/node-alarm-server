@@ -2,19 +2,18 @@
     import {
         Header,
         HeaderUtilities,
-        HeaderGlobalAction,
         SideNav,
         SideNavItems,
-        SideNavMenu,
-        SideNavMenuItem,
         SideNavLink,
         SkipToContent,
         Content,
         Grid,
         Row,
-        Column, HeaderPanelLink, HeaderActionLink, SideNavDivider,
+        Column,
+        HeaderActionLink,
+        SideNavDivider
     } from "carbon-components-svelte";
-    import {Chemistry, Help, LogoGithub, Settings, TrafficCone} from "carbon-icons-svelte";
+    import {Chemistry, Help, LogoGithub, Settings, TrafficCone, User} from "carbon-icons-svelte";
 
     let isSideNavOpen = false;
 </script>
@@ -27,7 +26,8 @@
         <SkipToContent />
     </svelte:fragment>
     <HeaderUtilities>
-        <HeaderActionLink aria-label="Settings" icon={Help} href="/help"/>
+        <HeaderActionLink aria-label="Hilfe" icon={Help} href="/help"/>
+        <HeaderActionLink aria-label="Anmelden" icon={User} href="/login"/>
     </HeaderUtilities>
 
     <SideNav bind:isOpen={isSideNavOpen} rail>
