@@ -20,7 +20,7 @@ config.getYaml();
 
 const emitter = new EventEmitter();
 
-const alarmhandler = new AlarmHandler(config.config, logger, emitter);
+const alarmhandler = new AlarmHandler(config.config, logger, emitter, dirname);
 
 // Alarmhandler wird nach einem Timeout gestartet
 setTimeout(() => {
