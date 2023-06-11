@@ -26,6 +26,7 @@ export default class WebUI{
 
         this.app.use(cors());
         this.app.use(bodyParser.json());
+
         this.app.use("/api/v1", this.v1Router);
     }
 
@@ -37,27 +38,26 @@ export default class WebUI{
         });
 
         this.v1Router.post('/auth/login', async (req, res) => {
-            await this.userDB.read()
             let data = req.body;
-            let user = {}
 
-            for (let i = 0; i < this.userDB.data.users.length; i++) {
-                if (this.userDB.data.users[i].username === data.username) {
-                    user = this.userDB.data.users[i];
-                }
+            if (data.password === process.env.API_ADMIN_SECRET) {
+                let token = await jwt.sign({
+                    "login-time": Math.floor(Date.now() / 1000),
+                }, process.env.API_ADMIN_SECRET, { expiresIn: '5d' });
+
+                return res.status(200).send({"msg": "Erfolgreich angemeldet!", "token": token});
             }
-
-            if (user === {}) {
-                res.status(401).send();
+            else {
+                return res.status(401).send({"msg": "Falsches Passwort!"});
             }
-
-            bcrypt.compare(data.password, user.password, function (err, result) {
-                if (result) {
-                }
-            });
         })
 
         this.v1Router.post('/auth/signup', async (req, res) => {
+            return res.status(405).send();
+            /*
+
+            Aktuell nicht benötigt, da Anmeldung via Admin Passwort, nicht Username, Passwort
+
             await this.userDB.read();
             let data = req.body;
 
@@ -85,6 +85,7 @@ export default class WebUI{
                     }
                 });
             }
+             */
         })
 
         this.v1Router.post("/test/:type", this.authenticateToken, (req, res) => {
@@ -116,16 +117,12 @@ export default class WebUI{
     }
 
     async authenticateToken (req, res, next) {
-        await this.userDB.read();
         const token = req.headers["authorization"];
 
-        if (token == null) return res.sendStatus(401)
+        if (token == null) return res.status(401).send({"err": "Nicht authorisiert!"})
 
         jwt.verify(token, process.env.API_ADMIN_SECRET, (err, user) => {
             if (err) return res.sendStatus(403)
-
-            req.user = user
-
             next()
         })
     }
