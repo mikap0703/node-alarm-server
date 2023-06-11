@@ -122,7 +122,12 @@ class MailHandler {
             if (sender === this.alarmSender || this.alarmSender === '*') {
                 if (subject === this.alarmSubject || this.alarmSubject === '*') {
                     this.logger.log('INFO', `[#${id}] Absender (${sender}) und Betreff (${subject}) stimmen überein - Mail #${id} wird ausgewertet!`)
-                    this.emitter.emit('alarm', this.mailParser(id, content));
+                    let alarmData = this.mailParser(id, content)
+                    console.log(content);
+                    alarmData.data.mailData = {
+                        id, sender, subject, content, date
+                    }
+                    this.emitter.emit('alarm', alarmData);
                 }
                 else {
                     this.logger.log('INFO', `[#${id}] Falscher Betreff (${subject}) - Alarm wird nicht ausgelöst`);
