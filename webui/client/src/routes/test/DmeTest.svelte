@@ -4,7 +4,7 @@
     let content, open, responsePromise;
 
     const fetchData = async () => {
-        fetch("http://localhost:8113/api/v1/test/dme", {
+        fetch("http://localhost:8112/api/v1/test/dme", {
             method: 'POST',
             headers:{
                 "Content-Type": "application/json",
