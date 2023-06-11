@@ -3,12 +3,20 @@ import AlamosHandler from './apiHandlers/alamosHandler.js';
 import MailHandler from "./emailHandler.js";
 import DMEHandler from "./dmeHandler.js";
 import axios from "axios";
+import { Low } from 'lowdb'
+import { JSONFile } from 'lowdb/node'
+import { join } from "path";
 
 export default class AlarmHandler {
-    constructor(config, logger, emitter) {
+    constructor(config, logger, emitter, dirname) {
         this.config = config;
         this.logger = logger;
         this.emitter = emitter;
+
+        const file = join(dirname, "db", 'alarms.json');
+        const adapter = new JSONFile(file)
+        const defaultData = { alarms: [] }
+        this.alarmDB = new Low(adapter, defaultData)
 
         this.doTriggerAlarm = this.config.general.alarm;
 
@@ -76,7 +84,7 @@ export default class AlarmHandler {
         }
     }
 
-    handleAlarm(alarm) {
+    async handleAlarm(alarm) {
         if (!this.doTriggerAlarm) {
             this.logger.log('INFO', `Alarm nicht ausgelöst - Weiterleitung deaktiviert: ${this.logger.convertObject(alarm.data)}`);
         }
@@ -89,10 +97,13 @@ export default class AlarmHandler {
                 }
             }
         }
+
+        this.alarmDB.data.alarms.push(alarm.data)
+
+        await this.alarmDB.write();
     }
 
     handleHook(url) {
-        let data = ''
         axios.get(url)
             .then((res) => {
                 this.logger.log('INFO', `WebHook ${url} aufgerufen...Status ${res.status}`);
