@@ -6,6 +6,10 @@
     const fetchData = async () => {
         fetch("http://localhost:8113/api/v1/test/dme", {
             method: 'POST',
+            headers:{
+                "Content-Type": "application/json",
+                "authorization": localStorage.getItem("token")
+            },
             body: JSON.stringify({
                 "content": "content"
             })

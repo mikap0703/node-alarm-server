@@ -4,18 +4,21 @@
         FormGroup,
         Button,
         TextArea,
-        TextInput, Modal, InlineNotification,
+        TextInput,
+        InlineNotification
     } from "carbon-components-svelte";
+
     import TestServerAnswer from "$lib/TestServerAnswer.svelte";
 
     let sender, subject, content, open, responsePromise;
 
     const fetchData = async () => {
         console.log(sender);
-        fetch("http://localhost:8113/api/v1/test/mail", {
+        fetch("http://localhost:8112/api/v1/test/mail", {
             method: 'POST',
             headers:{
-                'Content-Type': 'application/json'
+                "Content-Type": "application/json",
+                "authorization": localStorage.getItem("token")
             },
             body: JSON.stringify({
                 "sender": sender,
