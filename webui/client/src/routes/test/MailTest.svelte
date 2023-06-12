@@ -13,8 +13,7 @@
     let sender, subject, content, open, responsePromise;
 
     const fetchData = async () => {
-        console.log(sender);
-        fetch("http://localhost:8112/api/v1/test/mail", {
+        fetch("/api/v1/test/mail", {
             method: 'POST',
             headers:{
                 "Content-Type": "application/json",
@@ -27,10 +26,8 @@
             })
         })
             .then(response => {
-                console.log(response)
                 response.json()
                     .then(json => {
-                        console.log(json)
                         return json
                     })
                     .catch(error => console.log(error))

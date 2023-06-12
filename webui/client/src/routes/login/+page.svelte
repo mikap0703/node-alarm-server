@@ -5,7 +5,7 @@
     let password, success;
     let resData = {};
     const handleLogin = async () => {
-        fetch("http://localhost:8112/api/v1/auth/login", {
+        fetch("/api/v1/auth/login", {
             method: 'POST',
             headers:{
                 'Content-Type': 'application/json'
