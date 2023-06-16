@@ -29,8 +29,5 @@
     "tail": "^2.2.6",
     "winston": "^3.8.2",
     "yaml": "^2.2.1"
-  },
-  "devDependencies": {
-    "typescript": "^5.1.3"
   }
 }
