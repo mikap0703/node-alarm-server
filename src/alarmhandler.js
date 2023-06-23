@@ -13,7 +13,7 @@ export default class AlarmHandler {
         this.logger = logger;
         this.emitter = emitter;
 
-        const file = join(dirname, "db", 'alarms.json');
+        const file = join(dirname, "src", "db", 'alarms.json');
         const adapter = new JSONFile(file)
         const defaultData = { alarms: [] }
         this.alarmDB = new Low(adapter, defaultData)
@@ -69,6 +69,7 @@ export default class AlarmHandler {
             this.dmeHandler = newDmeHandler();
             this.dmeHandler.start();
 
+            /*
             this.emitter.on('restartDmeHandler', () => {
                 delete this.dmeHandler;
                 setTimeout(() => {
@@ -76,6 +77,7 @@ export default class AlarmHandler {
                     this.dmeHandler.start();
                 }, 2000);
             })
+             */
 
             this.emitter.on('dmeData', (data) => {
                 console.log(data)
