@@ -64,7 +64,7 @@ export default class DMEHandler {
     }
 
     handleDMEData(dmeContent) {
-        const [date, ric, msg] = dmeContent.split(/\r?\n|\r|\n/g).slice(-3);
+        const [date, ric, msg] = dmeContent.split(/\r\n\0|\r\n|\n/).slice(-3);
 
         let alarm = new AlarmBuilder(this.logger);
 
