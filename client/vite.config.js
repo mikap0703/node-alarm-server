@@ -7,8 +7,12 @@ config();
 export default defineConfig({
 	server: {
 		proxy: {
-			"/api": process.env.BACKEND_IP_PORT,
-		},
+			'/api': {
+				target: process.env.BACKEND_IP_PORT,
+				changeOrigin: true,
+				secure: false,
+			}
+		}
 	},
 	plugins: [sveltekit()]
 });
