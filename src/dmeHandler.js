@@ -64,12 +64,8 @@ export default class DMEHandler {
     }
 
     handleDMEData(dmeContent) {
-        console.log(dmeContent);
         const [date, ric, msg] = dmeContent.split(/\r?\n|\r|\n/g).slice(-3);
 
-        console.log(date);
-        console.log(ric);
-        console.log(msg)
         let alarm = new AlarmBuilder(this.logger);
 
         alarm.applyTemplate(this.alarmTemplates['default']);
@@ -86,7 +82,7 @@ export default class DMEHandler {
         let alarmTemplate = this.config.rics[ric] || '';
 
         if (alarmTemplate === '') {
-            this.logger.log('INFO', `DME Alarm angekommen - RIC ${ric} - kein AlarmTemplate gefunden!`);
+            this.logger.log('INFO', `DME Alarm angekommen - RIC "${ric}" - kein AlarmTemplate gefunden!`);
         }
         else {
             alarm.applyTemplate(this.alarmTemplates[alarmTemplate]);
