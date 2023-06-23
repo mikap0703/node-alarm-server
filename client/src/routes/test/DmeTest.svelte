@@ -11,7 +11,7 @@
                 "authorization": localStorage.getItem("token")
             },
             body: JSON.stringify({
-                "content": "content"
+                "content": content
             })
         })
             .then(response => {
