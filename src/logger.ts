@@ -2,10 +2,14 @@ import chalk from "chalk";
 import path from "path";
 
 type logType = "INFO" | "WARN" | "ERROR";
-export default class Logger {
+export interface ILogger {
+    log(type: logType, payload: string): void;
+    convertObject(o: any): string;
+}
+export default class Logger implements ILogger {
     private logDir: string;
-    constructor(__dirname: string) {
-        this.logDir = path.join(__dirname, 'logs');
+    constructor(dirname: string) {
+        this.logDir = path.join(dirname, "logs");
     }
 
     log (type: logType, payload: string) {
