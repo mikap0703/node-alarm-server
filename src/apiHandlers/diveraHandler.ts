@@ -1,5 +1,4 @@
 import axios from "axios";
-import {ILogger} from "../logger.js";
 import apiHandler from "./apiHandler.js";
 import {Alarm} from "../types/Alarm.js";
 
