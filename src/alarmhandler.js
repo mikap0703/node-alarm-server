@@ -69,7 +69,6 @@ export default class AlarmHandler {
             this.dmeHandler = newDmeHandler();
             this.dmeHandler.start();
 
-            /*
             this.emitter.on('restartDmeHandler', () => {
                 delete this.dmeHandler;
                 setTimeout(() => {
@@ -77,7 +76,6 @@ export default class AlarmHandler {
                     this.dmeHandler.start();
                 }, 2000);
             })
-             */
 
             this.emitter.on('dmeData', (data) => {
                 console.log(data)
