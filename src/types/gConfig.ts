@@ -1,4 +1,4 @@
-export type GConfig = {
+export type gConfig = {
     api: "Divera" | "Alamos";
     apiKey: string;
     timeout: number;
