@@ -6,6 +6,7 @@ export default class DiveraHandler {
         this.logger = logger;
         this.generalConfig = generalConfig;
         this.checkConnection();
+        this.instanceName = "";
     }
 
     triggerAlarm(alarm) {
@@ -65,13 +66,8 @@ export default class DiveraHandler {
                 accesskey: this.apikey
             }})
             .then((res) => {
-                this.logger.log('INFO', `Divera API erfolgreich authorisiert (${res.data.data.cluster.name})`)
-                let alarmNotificationSettings = res.data.data.cluster.settings.alarm_notification_primary
-                if (alarmNotificationSettings[0] != '') {
-                    this.logger.log('INFO', `Es sind ${alarmNotificationSettings.length} Möglichkeiten zur Alarmierung hinterlegt: ${alarmNotificationSettings}`)
-                } else {
-                    this.logger.log('WARN', `Es sind keine Kanäle zur Alarmierung eingerichtet. (Divera -> Verwaltung -> Meldungen -> Alarmierungen -> Über diese Kanäle alarmieren)`)
-                }
+                this.instanceName = res.data.data.cluster.name;
+                this.logger.log('INFO', `Divera API erfolgreich authorisiert (${this.instanceName})`)
             })
             .catch((error) => {
                 this.logger.log('ERROR', 'Verbindung konnte nicht überprüft werden: ' + this.logger.convertObject(error));
