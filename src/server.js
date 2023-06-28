@@ -9,7 +9,7 @@ import 'dotenv/config'
 import jwt from "jsonwebtoken";
 
 
-export default class WebUI{
+export default class Backend{
     constructor(dirname, port, logger, emitter) {
         this.port = port;
         this.logger = logger;
