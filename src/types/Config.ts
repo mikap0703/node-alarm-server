@@ -39,5 +39,5 @@ export type config = {
     general: generalConfig;
     mail: mailConfig;
     serialDME: serialDMEConfig;
-    alarmTemplates: Alarm;
+    alarmTemplates: Record<string, Alarm>;
 }
