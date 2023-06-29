@@ -1,5 +1,5 @@
-import DiveraHandler from './apiHandlers/diveraHandler.js';
-import AlamosHandler from './apiHandlers/alamosHandler.js';
+import DiveraHandler from './apiHandlers/divera.js';
+import AlamosHandler from './apiHandlers/alamos.js';
 import MailHandler from "./emailHandler.js";
 import DMEHandler from "./dmeHandler.js";
 import axios from "axios";
