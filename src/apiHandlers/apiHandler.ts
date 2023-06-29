@@ -7,6 +7,7 @@ export interface ApiHandler {
     triggerAlarm(alarm: Alarm): void;
     checkConnection(): void;
 }
+
 export default class apiHandler implements ApiHandler {
     protected apikey: string;
     protected logger: ILogger;
