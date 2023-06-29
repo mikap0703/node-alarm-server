@@ -1,24 +1,41 @@
 import express, { Router } from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
-import bcrypt from "bcrypt";
 import { Low } from 'lowdb'
 import { JSONFile } from 'lowdb/node'
 import { join } from "path";
 import 'dotenv/config'
 import jwt from "jsonwebtoken";
-
+import {ILogger} from "./logger.js";
+import {EventEmitter} from "node:events";
 
 export default class Backend{
-    constructor(dirname, port, logger, emitter) {
+    private port: number;
+    private readonly logger: ILogger;
+    private emitter: EventEmitter;
+    private app: any;
+    private v1Router: Router;
+    private readonly adminSecret: string;
+
+    constructor(dirname: string, port: number, logger: ILogger, emitter: EventEmitter) {
         this.port = port;
         this.logger = logger;
         this.emitter = emitter;
 
+        let adminSecret: string | undefined = process.env.API_ADMIN_SECRET
+        if (adminSecret) {
+            this.adminSecret = adminSecret;
+        }
+        else {
+            this.adminSecret = "";
+        }
+
+        /*
         const file = join(dirname, "db", 'users.json');
         const adapter = new JSONFile(file)
         const defaultData = { users: [] }
         this.userDB = new Low(adapter, defaultData)
+        */
 
         this.app = express();
 
@@ -31,7 +48,7 @@ export default class Backend{
     }
 
     async start() {
-        await this.userDB.read();
+        //await this.userDB.read();
         // API
         this.v1Router.get("/healthcheck", (req, res) => {
             res.end('ok');
@@ -43,7 +60,7 @@ export default class Backend{
             if (data.password === process.env.API_ADMIN_SECRET) {
                 let token = await jwt.sign({
                     "login-time": Math.floor(Date.now() / 1000),
-                }, process.env.API_ADMIN_SECRET, { expiresIn: '5d' });
+                }, this.adminSecret, { expiresIn: '5d' });
 
                 return res.status(200).send({"msg": "Erfolgreich angemeldet!", "token": token});
             }
@@ -117,12 +134,12 @@ export default class Backend{
         });
     }
 
-    async authenticateToken (req, res, next) {
+    async authenticateToken (req: any, res: any, next: any) {
         const token = req.headers["authorization"];
 
         if (token == null) return res.status(401).send({"err": "Nicht authorisiert!"})
 
-        jwt.verify(token, process.env.API_ADMIN_SECRET, (err, user) => {
+        jwt.verify(token, this.adminSecret, (err: any) => {
             if (err) return res.sendStatus(403)
             next()
         })
