@@ -1,5 +1,5 @@
 import { SerialPort, ReadlineParser } from 'serialport';
-import AlarmFactory from "./alarmFactory.ts";
+import AlarmFactory from "./alarmFactory.js";
 
 export default class DMEHandler {
     constructor(dmeConfig, alarmTemplates, logger, emitter) {

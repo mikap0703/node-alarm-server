@@ -2,7 +2,7 @@ import Imap from "imap";
 import {simpleParser} from "mailparser";
 import {config} from "dotenv";
 import {JSDOM} from "jsdom";
-import AlarmFactory from "./alarmFactory.ts";
+import AlarmFactory from "./alarmFactory.js";
 
 config();
 

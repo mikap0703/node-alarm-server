@@ -1,4 +1,4 @@
-import AlarmHandler from "./alarmhandler.js";
+import AlarmHandler from "./alarmHandler.js";
 import {fileURLToPath} from "url";
 import path from "path";
 import configChecker from "./config.js";
