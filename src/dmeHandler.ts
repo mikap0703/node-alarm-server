@@ -1,8 +1,21 @@
 import { SerialPort, ReadlineParser } from 'serialport';
 import AlarmFactory from "./alarmFactory.js";
+import {serialDMEConfig} from "./types/Config.js";
+import {ILogger} from "./logger.js";
+import {EventEmitter} from "node:events";
+import {Alarm} from "./types/Alarm.js";
 
 export default class DMEHandler {
-    constructor(dmeConfig, alarmTemplates, logger, emitter) {
+    private config: serialDMEConfig;
+    private alarmTemplates: Record<string, Alarm>;
+    private logger: ILogger;
+    private emitter: EventEmitter;
+    private path: string;
+    private baudrate: number;
+    private port: SerialPort;
+    private parser: ReadlineParser;
+
+    constructor(dmeConfig: serialDMEConfig, alarmTemplates: Record<string, Alarm>, logger: ILogger, emitter: EventEmitter) {
         this.config = dmeConfig;
         this.alarmTemplates = alarmTemplates;
         this.logger = logger;
@@ -63,7 +76,7 @@ export default class DMEHandler {
         });
     }
 
-    handleDMEData(dmeContent) {
+    handleDMEData(dmeContent: string) {
         const [date, ric, msg] = dmeContent.split(/\r\n\0|\r\n|\n/).slice(-3);
 
         let alarm = new AlarmFactory(this.logger);
