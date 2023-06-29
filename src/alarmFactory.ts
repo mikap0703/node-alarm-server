@@ -1,7 +1,7 @@
-import {Address, Alarm, DmeData, IAlarmBuilder, MailData} from "./types/Alarm.js";
+import {Address, Alarm, DmeData, IAlarmFactory, MailData} from "./types/Alarm.js";
 import {ILogger} from "./logger.js";
 
-export default class AlarmBuilder implements IAlarmBuilder{
+export default class AlarmFactory implements IAlarmFactory{
     private logger: ILogger;
     public readonly data: Alarm;
     constructor(logger: ILogger) {

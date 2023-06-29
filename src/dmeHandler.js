@@ -1,5 +1,5 @@
 import { SerialPort, ReadlineParser } from 'serialport';
-import AlarmBuilder from "./alarm.js";
+import AlarmFactory from "./alarmFactory.ts";
 
 export default class DMEHandler {
     constructor(dmeConfig, alarmTemplates, logger, emitter) {
@@ -66,7 +66,7 @@ export default class DMEHandler {
     handleDMEData(dmeContent) {
         const [date, ric, msg] = dmeContent.split(/\r\n\0|\r\n|\n/).slice(-3);
 
-        let alarm = new AlarmBuilder(this.logger);
+        let alarm = new AlarmFactory(this.logger);
 
         alarm.applyTemplate(this.alarmTemplates['default']);
 

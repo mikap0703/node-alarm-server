@@ -2,7 +2,7 @@ import Imap from "imap";
 import {simpleParser} from "mailparser";
 import {config} from "dotenv";
 import {JSDOM} from "jsdom";
-import AlarmBuilder from "./alarm.js";
+import AlarmFactory from "./alarmFactory.ts";
 
 config();
 
@@ -167,7 +167,7 @@ class MailHandler {
 
         const tableData = extractTableData(content);
 
-        let alarm = new AlarmBuilder(this.logger);
+        let alarm = new AlarmFactory(this.logger);
         alarm.applyTemplate(this.alarmTemplates['default']);
 
         // Einsatznummer - ID
