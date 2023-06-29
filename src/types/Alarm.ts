@@ -31,3 +31,18 @@ export type Alarm = {
     mailData: MailData;
     dmeData: DmeData;
 };
+
+export interface IAlarmFactory {
+    applyTemplate(template: Alarm): Alarm;
+    id(id: string): Alarm;
+    title(title: string): Alarm;
+    text(text: string): Alarm;
+    time(time: number): Alarm;
+    address(address: Address): Alarm;
+    groups(groups: string[]): Alarm;
+    vehicles(vehicles: string[]): Alarm;
+    members(members: string[]): Alarm;
+    webhooks(webhooks: string[]): Alarm;
+    mailData(data: MailData): Alarm;
+    dmeData(data: DmeData): Alarm;
+}
