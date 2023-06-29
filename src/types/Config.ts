@@ -23,6 +23,7 @@ export type mailConfig = {
     alarmTemplateKeywords: Record<string, string>;
     mailSchema: string;
     stichwoerter: Record<string, string>;
+    [key: string]: any;
 }
 
 export type serialDMEConfig = {
@@ -31,6 +32,7 @@ export type serialDMEConfig = {
     baudrate: number;
     alarmList: string[];
     rics: Record<string, string>
+    [key: string]: any;
 }
 
 export type config = {
