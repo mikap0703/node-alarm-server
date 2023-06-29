@@ -22,7 +22,7 @@ export default class AlarmHandler {
     private alarmDB: Low<TalarmDB>;
     private readonly doTriggerAlarm: boolean;
     private triggerAlarm: OmitThisParameter<(alarm: Alarm) => void>;
-    private timeout: number;
+    timeout: number;
     private readonly apiKey: string;
     private mailHandler?: MailHandler;
     private dmeHandler?: DMEHandler;

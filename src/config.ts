@@ -7,7 +7,7 @@ import {config} from "./types/Config.js";
 export default class configChecker {
     private configDir: string;
     private logger: ILogger;
-    private config: config;
+    config: config;
     constructor(configDir: string, logger: ILogger) {
         this.configDir = configDir;
         this.logger = logger;
