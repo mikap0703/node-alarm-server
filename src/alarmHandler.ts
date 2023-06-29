@@ -6,17 +6,37 @@ import axios from "axios";
 import { Low } from 'lowdb'
 import { JSONFile } from 'lowdb/node'
 import { join } from "path";
+import {config} from "./types/Config.js";
+import {ILogger} from "./logger.js";
+import {EventEmitter} from "node:events";
+import {Alarm} from "./types/Alarm.js";
+
+type TalarmDB = {
+    alarms: Alarm[];
+}
 
 export default class AlarmHandler {
-    constructor(config, logger, emitter, dirname) {
+    private config: config;
+    private logger: ILogger;
+    private emitter: EventEmitter;
+    private alarmDB: Low<TalarmDB>;
+    private readonly doTriggerAlarm: boolean;
+    private triggerAlarm: OmitThisParameter<(alarm: Alarm) => void>;
+    private timeout: number;
+    private readonly apiKey: string;
+    private mailHandler?: MailHandler;
+    private dmeHandler?: DMEHandler;
+
+    constructor(config: config, logger: ILogger, emitter: EventEmitter, dirname: string) {
         this.config = config;
         this.logger = logger;
         this.emitter = emitter;
 
         const file = join(dirname, "src", "db", 'alarms.json');
-        const adapter = new JSONFile(file)
-        const defaultData = { alarms: [] }
-        this.alarmDB = new Low(adapter, defaultData)
+        const defaultData: TalarmDB = { alarms: [] }
+
+        const adapter = new JSONFile<TalarmDB>(file)
+        this.alarmDB = new Low<TalarmDB>(adapter, defaultData)
 
         this.doTriggerAlarm = this.config.general.alarm;
 
@@ -44,7 +64,7 @@ export default class AlarmHandler {
 
     start() {
         this.emitter.on('alarm', (alarm) => {
-            this.handleAlarm(alarm);
+            this.handleAlarm(alarm.data);
         });
 
         if (this.config.general.mail) {
@@ -61,7 +81,9 @@ export default class AlarmHandler {
             });
 
             this.emitter.on('mailData', (data) => {
-                this.mailHandler.handleMailData(data.id, data.sender, data.subject, data.content, data.date);
+                if (this.mailHandler) {
+                    this.mailHandler.handleMailData(data.id, data.sender, data.subject, data.content, data.date);
+                }
             })
         }
         if (this.config.general.serialDME) {
@@ -78,32 +100,32 @@ export default class AlarmHandler {
             })
 
             this.emitter.on('dmeData', (data) => {
-                console.log(data)
-                this.dmeHandler.handleDMEData(data.content);
+                if (this.dmeHandler) {
+                    console.log(data)
+                    this.dmeHandler.handleDMEData(data.content);
+                }
             })
         }
     }
 
-    async handleAlarm(alarm) {
+    async handleAlarm(alarm: Alarm) {
         if (!this.doTriggerAlarm) {
-            this.logger.log('INFO', `Alarm nicht ausgelöst - Weiterleitung deaktiviert: ${this.logger.convertObject(alarm.data)}`);
+            this.logger.log('INFO', `Alarm nicht ausgelöst - Weiterleitung deaktiviert: ${this.logger.convertObject(alarm)}`);
         }
         else {
-            this.logger.log('INFO', `Alarm wird ausgelöst: ${this.logger.convertObject(alarm.data)}`);
+            this.logger.log('INFO', `Alarm wird ausgelöst: ${this.logger.convertObject(alarm)}`);
             this.triggerAlarm(alarm);
-            if (alarm.data.webhooks !== []) {
-                for (let webhook of alarm.data.webhooks) {
-                    this.handleHook(webhook);
-                }
+            for (let webhook of alarm.webhooks) {
+                this.handleHook(webhook);
             }
         }
 
-        this.alarmDB.data.alarms.push(alarm.data)
+        this.alarmDB.data.alarms.push(alarm)
 
         await this.alarmDB.write();
     }
 
-    handleHook(url) {
+    handleHook(url: string) {
         axios.get(url)
             .then((res) => {
                 this.logger.log('INFO', `WebHook ${url} aufgerufen...Status ${res.status}`);
