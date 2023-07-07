@@ -67,12 +67,12 @@
             />
         </FormGroup>
         <FormGroup>
-        <TextArea
-                helperText="Inhalt der E-Mail (HTML oder Klartext)"
-                labelText="Text"
-                placeholder="Text eingeben..."
-                bind:value={content}
-        />
+            <TextArea
+                    helperText="Inhalt der E-Mail (HTML oder Klartext)"
+                    labelText="Text"
+                    placeholder="Text eingeben..."
+                    bind:value={content}
+            />
         </FormGroup>
 
         <Button kind="danger" type="submit">"Absenden"</Button>
