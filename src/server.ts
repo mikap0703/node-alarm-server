@@ -1,13 +1,12 @@
 import express, { Router } from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
-import { Low } from 'lowdb'
-import { JSONFile } from 'lowdb/node'
-import { join } from "path";
 import 'dotenv/config'
 import jwt from "jsonwebtoken";
 import {ILogger} from "./logger.js";
 import {EventEmitter} from "node:events";
+
+let adminSecret: string = process.env.API_ADMIN_SECRET || "";
 
 export default class Backend{
     private port: number;
@@ -15,20 +14,11 @@ export default class Backend{
     private emitter: EventEmitter;
     private app: any;
     private v1Router: Router;
-    private readonly adminSecret: string;
 
     constructor(dirname: string, port: number, logger: ILogger, emitter: EventEmitter) {
         this.port = port;
         this.logger = logger;
         this.emitter = emitter;
-
-        let adminSecret: string | undefined = process.env.API_ADMIN_SECRET
-        if (adminSecret) {
-            this.adminSecret = adminSecret;
-        }
-        else {
-            this.adminSecret = "";
-        }
 
         /*
         const file = join(dirname, "db", 'users.json');
@@ -60,7 +50,7 @@ export default class Backend{
             if (data.password === process.env.API_ADMIN_SECRET) {
                 let token = await jwt.sign({
                     "login-time": Math.floor(Date.now() / 1000),
-                }, this.adminSecret, { expiresIn: '5d' });
+                }, adminSecret, { expiresIn: '5d' });
 
                 return res.status(200).send({"msg": "Erfolgreich angemeldet!", "token": token});
             }
@@ -123,11 +113,16 @@ export default class Backend{
                     this.emitter.emit('dmeData', {
                         content: data.content
                     })
+                    console.log(data.content)
                     break;
             }
 
             res.status(200).send({status: "ok"});
         });
+
+        this.v1Router.post("/settings", this.authenticateToken, (req, res) => {
+
+        })
 
         this.app.listen(this.port, () => {
             this.logger.log("INFO", "API listening on port " + this.port);
@@ -138,8 +133,7 @@ export default class Backend{
         const token = req.headers["authorization"];
 
         if (token == null) return res.status(401).send({"err": "Nicht authorisiert!"})
-
-        jwt.verify(token, this.adminSecret, (err: any) => {
+        jwt.verify(token, adminSecret, (err: any) => {
             if (err) return res.sendStatus(403)
             next()
         })
