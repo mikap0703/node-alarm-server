@@ -1,4 +1,4 @@
-import { SerialPort, ReadlineParser } from 'serialport';
+import { SerialPort, ReadlineParser, SerialPortMock } from 'serialport';
 import AlarmFactory from "./alarmFactory.js";
 import {serialDMEConfig} from "./types/Config.js";
 import {ILogger} from "./logger.js";
@@ -28,12 +28,14 @@ export default class DMEHandler {
             baudRate: this.baudrate,
             autoOpen: false,
         });
+
         this.parser = this.port.pipe(new ReadlineParser({delimiter: this.config.delimiter}));
     }
 
     start() {
         if (this.port.isOpen) {
             this.logger.log('WARN', 'Der serielle Port ist bereits geöffnet.');
+            this.emitter.emit('restartDmeHandler');
             return;
         }
         this.port.open((err) => {
