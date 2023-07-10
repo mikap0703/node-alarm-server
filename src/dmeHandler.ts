@@ -79,31 +79,41 @@ export default class DMEHandler {
     }
 
     handleDMEData(dmeContent: string) {
-        const [date, ric, msg] = dmeContent.split(/\r\n\0|\r\n|\n/).slice(-3);
-
+        // preparing AlarmFactory
         let alarm = new AlarmFactory(this.logger);
-
         alarm.applyTemplate(this.alarmTemplates['default']);
+
+        // parsing data from DME
+        const [dateString, ric, msg] = dmeContent.split(/\r\n\0|\r\n|\n/).slice(-3);
+
+        // extract the date and time components from the string
+        const [time, date] = dateString.split(" ");
+        const [hours, minutes] = time.split(":").map(Number);
+        const [day, month, year] = date.split(".").map(Number);
+
+        alarm.time(new Date(2000 + year, month - 1, day, hours, minutes).getTime() / 1000);
 
         for(let keyword of this.config.alarmList){
             if(msg.includes(keyword)) {
-                alarm.data.title = keyword;
+                alarm.title(keyword)
                 break;
             }
         }
 
-        alarm.data.text = msg;
+        alarm.text(msg);
 
-        let alarmTemplate = this.config.rics[ric] || '';
-
-        if (alarmTemplate === '') {
+        let template = this.config.rics[ric] || '';
+        if (template === '') {
             this.logger.log('INFO', `DME Alarm angekommen - RIC "${ric}" - kein AlarmTemplate gefunden!`);
         }
         else {
-            alarm.applyTemplate(this.alarmTemplates[alarmTemplate]);
+            alarm.applyTemplate(this.alarmTemplates[template]);
         }
 
-        alarm.data.dmeData.content = dmeContent;
+        alarm.dmeData({
+            content: dmeContent
+        })
+
         this.emitter.emit('alarm', alarm);
     }
 }
