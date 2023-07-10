@@ -7,11 +7,11 @@ import {Alarm} from "./types/Alarm.js";
 
 export default class DMEHandler {
     private config: serialDMEConfig;
-    private alarmTemplates: Record<string, Alarm>;
-    private logger: ILogger;
-    private emitter: EventEmitter;
-    private path: string;
-    private baudrate: number;
+    private readonly alarmTemplates: Record<string, Alarm>;
+    private readonly logger: ILogger;
+    private readonly emitter: EventEmitter;
+    private readonly path: string;
+    private readonly baudrate: number;
     private port: SerialPort;
     private parser: ReadlineParser;
 
