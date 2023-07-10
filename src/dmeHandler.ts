@@ -1,4 +1,4 @@
-import { SerialPort, ReadlineParser, SerialPortMock } from 'serialport';
+import { SerialPort, ReadlineParser } from 'serialport';
 import AlarmFactory from "./alarmFactory.js";
 import {serialDMEConfig} from "./types/Config.js";
 import {ILogger} from "./logger.js";
