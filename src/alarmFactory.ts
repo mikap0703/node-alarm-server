@@ -3,11 +3,13 @@ import {ILogger} from "./logger.js";
 
 export default class AlarmFactory implements IAlarmFactory{
     private logger: ILogger;
-    public readonly data: Alarm;
+    public data: Alarm;
+
     constructor(logger: ILogger) {
         this.logger = logger;
         this.data = {
             id: "",
+            origin: "",
             title: "",
             text: "",
             time: Date.now(),
@@ -108,5 +110,10 @@ export default class AlarmFactory implements IAlarmFactory{
     dmeData(data: DmeData): Alarm {
         this.data.dmeData = data;
         return this.data;
+    }
+
+    compare(alarm: IAlarmFactory): number {
+
+        return 1;
     }
 }
