@@ -20,6 +20,7 @@ export type DmeData = {
 
 export type Alarm = {
     id: string;
+    origin: string | "mail" | "dme";
     title: string;
     text: string;
     time: number;
@@ -46,4 +47,5 @@ export interface IAlarmFactory {
     webhooks(webhooks: string[]): Alarm;
     mailData(data: MailData): Alarm;
     dmeData(data: DmeData): Alarm;
+    compare(alarm: IAlarmFactory): number;
 }
