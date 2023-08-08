@@ -84,7 +84,7 @@ export default class DMEHandler {
         alarm.applyTemplate(this.alarmTemplates['default']);
 
         // parsing data from DME
-        const [dateString, ric, msg] = dmeContent.split(/\r\n\0|\r\n|\n/).slice(-3);
+        let [dateString, ric, msg] = dmeContent.split(/\r\n\0|\r\n|\n/).slice(-3);
 
         // extract the date and time components from the string
         const [time, date] = dateString.split(" ");
