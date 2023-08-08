@@ -209,7 +209,7 @@ class MailHandler {
 
         // Einsatznummer - ID
         let einsatznummer: string = tableData['Einsatznummer:']?.[0] || '';
-        alarm.data.id = einsatznummer.toString();
+        alarm.id(einsatznummer.toString());
 
         // Stichwort, Text und Einsatzobjekt
         let stichwort: string = tableData['Einsatzstichwort:']?.[0] || '';
@@ -223,16 +223,16 @@ class MailHandler {
         if (notfallgeschehen) {
             const matchResult = notfallgeschehen.match(/\((.*?)\)/);
             if (matchResult) {
-                alarm.data.title = matchResult[1] || notfallgeschehen || "";
+                alarm.title(matchResult[1] || notfallgeschehen || "");
             } else {
-                alarm.data.title = notfallgeschehen || "";
+                alarm.title(notfallgeschehen || "");
             }
         } else if (stichwort) {
-            alarm.data.title = stichwort;
+            alarm.title(stichwort);
         }
 
 
-        alarm.data.text = sachverhalt ? (objekt ? sachverhalt + ' - ' + objekt : sachverhalt) : objekt;
+        alarm.text(sachverhalt ? (objekt ? sachverhalt + ' - ' + objekt : sachverhalt) : objekt);
 
         // Adresse
         alarm.data.address.street = tableData['Strasse / Hs.-Nr.:']?.[0] || '';
