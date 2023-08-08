@@ -28,6 +28,7 @@
     "socket.io": "^4.6.1",
     "tail": "^2.2.6",
     "typescript": "^5.1.5",
+    "uuid": "^9.0.0",
     "yaml": "^2.2.1"
   },
   "devDependencies": {
@@ -35,6 +36,7 @@
     "@types/imap": "^0.8.37",
     "@types/jsdom": "^21.1.1",
     "@types/jsonwebtoken": "^9.0.2",
-    "@types/mailparser": "^3.4.0"
+    "@types/mailparser": "^3.4.0",
+    "@types/uuid": "^9.0.2"
   }
 }
