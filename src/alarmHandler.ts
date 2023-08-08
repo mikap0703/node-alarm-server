@@ -16,16 +16,16 @@ type TalarmDB = {
 }
 
 export default class AlarmHandler {
+    private readonly doTriggerAlarm: boolean;
+    private readonly apiKey: string;
     private config: config;
     private logger: ILogger;
     private emitter: EventEmitter;
     private alarmDB: Low<TalarmDB>;
-    private readonly doTriggerAlarm: boolean;
     private triggerAlarm: OmitThisParameter<(alarm: Alarm) => void>;
-    timeout: number;
-    private readonly apiKey: string;
     private mailHandler?: MailHandler;
     private dmeHandler?: DMEHandler;
+    timeout: number;
 
     constructor(config: config, logger: ILogger, emitter: EventEmitter, dirname: string) {
         this.config = config;
