@@ -38,6 +38,7 @@ export interface IAlarmFactory {
     title(title: string): Alarm;
     text(text: string): Alarm;
     time(time: number): Alarm;
+    data: Alarm;
     address(address: Address): Alarm;
     groups(groups: string[]): Alarm;
     vehicles(vehicles: string[]): Alarm;
