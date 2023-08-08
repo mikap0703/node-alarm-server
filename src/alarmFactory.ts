@@ -10,7 +10,7 @@ export default class AlarmFactory implements IAlarmFactory{
             id: "",
             title: "",
             text: "",
-            time: 0,
+            time: Date.now(),
             address: {
                 street: "",
                 city: "",
