@@ -9,7 +9,9 @@ import { join } from "path";
 import {config} from "./types/Config.js";
 import {ILogger} from "./logger.js";
 import {EventEmitter} from "node:events";
-import {Alarm} from "./types/Alarm.js";
+import {Alarm, IAlarmFactory} from "./types/Alarm.js";
+import { v4 as uuidv4 } from 'uuid';
+import AlarmFactory from "./alarmFactory.js";
 
 type TalarmDB = {
     alarms: Alarm[];
@@ -64,7 +66,7 @@ export default class AlarmHandler {
 
     start() {
         this.emitter.on('alarm', (alarm) => {
-            this.handleAlarm(alarm.data);
+            this.handleAlarm(alarm)
         });
 
         if (this.config.general.mail) {
@@ -108,19 +110,34 @@ export default class AlarmHandler {
         }
     }
 
-    async handleAlarm(alarm: Alarm) {
+    async handleAlarm(alarm: IAlarmFactory) {
+        if (alarm.data .id == "") {
+            alarm.id(uuidv4());
+        }
+
+        await this.alarmDB.read();
+
+        let lastAlarm = new AlarmFactory(this.logger);
+
+        // last element from alarmDB
+        lastAlarm.data = this.alarmDB.data.alarms.slice(-1)[0];
+
         if (!this.doTriggerAlarm) {
-            this.logger.log('INFO', `Alarm nicht ausgelöst - Weiterleitung deaktiviert: ${this.logger.convertObject(alarm)}`);
+            this.logger.log('INFO', `Alarm nicht ausgelöst - Weiterleitung deaktiviert: ${this.logger.convertObject(alarm.data)}`);
         }
         else {
-            this.logger.log('INFO', `Alarm wird ausgelöst: ${this.logger.convertObject(alarm)}`);
-            this.triggerAlarm(alarm);
-            for (let webhook of alarm.webhooks) {
+            alarm.compare(lastAlarm);
+            if (alarm.data.origin == "mail") {
+
+            }
+            this.logger.log('INFO', `Alarm wird ausgelöst: ${this.logger.convertObject(alarm.data)}`);
+            this.triggerAlarm(alarm.data);
+            for (let webhook of alarm.data.webhooks) {
                 this.handleHook(webhook);
             }
         }
 
-        this.alarmDB.data.alarms.push(alarm)
+        this.alarmDB.data.alarms.push(alarm.data)
 
         await this.alarmDB.write();
     }
