@@ -22,7 +22,6 @@
     "imap": "^0.8.19",
     "jsdom": "^21.1.0",
     "jsonwebtoken": "^9.0.0",
-    "lodash": "^4.17.21",
     "lowdb": "^6.0.1",
     "mailparser": "^3.6.3",
     "serialport": "^10.5.0",
