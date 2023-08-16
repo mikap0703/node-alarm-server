@@ -117,6 +117,15 @@ export default class AlarmFactory implements IAlarmFactory{
         return this.data;
     }
 
+    import(data: Alarm): Alarm {
+        this.data = data;
+        return this.data;
+    }
+
+    export(): Alarm {
+        return this.data;
+    }
+
     compare(alarm: IAlarmFactory): number {
 
         return 1;

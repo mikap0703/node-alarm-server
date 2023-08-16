@@ -48,5 +48,7 @@ export interface IAlarmFactory {
     webhooks(webhooks: string[]): Alarm;
     mailData(data: MailData): Alarm;
     dmeData(data: DmeData): Alarm;
+    import(data: Alarm): Alarm;
+    export(): Alarm;
     compare(alarm: IAlarmFactory): number;
 }
