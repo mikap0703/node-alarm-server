@@ -205,6 +205,7 @@ class MailHandler {
         const tableData = this.extractTableData(content);
 
         let alarm = new AlarmFactory(this.logger);
+        alarm.origin("mail");
         alarm.applyTemplate(this.alarmTemplates['default']);
 
         // Einsatznummer - ID

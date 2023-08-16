@@ -81,6 +81,7 @@ export default class DMEHandler {
     handleDMEData(dmeContent: string) {
         // preparing AlarmFactory
         let alarm = new AlarmFactory(this.logger);
+        alarm.origin("dme");
         alarm.applyTemplate(this.alarmTemplates['default']);
 
         // parsing data from DME

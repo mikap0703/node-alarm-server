@@ -36,6 +36,7 @@ export type Alarm = {
 export interface IAlarmFactory {
     applyTemplate(template: Alarm): Alarm;
     id(id: string): Alarm;
+    origin(origin: "mail" | "dme"): Alarm;
     title(title: string): Alarm;
     text(text: string): Alarm;
     time(time: number): Alarm;

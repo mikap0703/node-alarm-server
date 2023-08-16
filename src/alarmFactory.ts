@@ -62,6 +62,11 @@ export default class AlarmFactory implements IAlarmFactory{
         return this.data;
     }
 
+    origin(origin: "mail" | "dme"): Alarm {
+        this.data.origin = origin;
+        return this.data;
+    }
+
     title(title: string): Alarm {
         this.data.title = title;
         return this.data;
