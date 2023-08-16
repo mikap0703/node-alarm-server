@@ -15,6 +15,8 @@ export default class Divera extends apiHandler {
             address = alarm.address.city
         }
 
+        this.logger.log('INFO', `Alarm wird ausgelöst: ${this.logger.convertObject(alarm)}`);
+
         axios.post('https://app.divera247.com/api/v2/alarms', {
             accesskey: this.apikey,
             Alarm: {
