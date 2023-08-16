@@ -21,10 +21,10 @@ export default class AlarmHandler {
     private readonly doTriggerAlarm: boolean;
     private readonly apiKey: string;
     private config: config;
-    private logger: ILogger;
-    private emitter: EventEmitter;
+    private readonly logger: ILogger;
+    private readonly emitter: EventEmitter;
     private alarmDB: Low<TalarmDB>;
-    private triggerAlarm: OmitThisParameter<(alarm: Alarm) => void>;
+    private readonly triggerAlarm: OmitThisParameter<(alarm: Alarm) => void>;
     private mailHandler?: MailHandler;
     private dmeHandler?: DMEHandler;
     timeout: number;
