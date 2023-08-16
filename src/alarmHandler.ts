@@ -116,7 +116,7 @@ export default class AlarmHandler {
     }
 
     async handleAlarm(alarm: IAlarmFactory) {
-        if (alarm.data .id == "") {
+        if (alarm.data.id == "") {
             alarm.id(uuidv4());
         }
 
