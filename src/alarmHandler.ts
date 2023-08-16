@@ -27,6 +27,7 @@ export default class AlarmHandler {
     private readonly triggerAlarm: OmitThisParameter<(alarm: Alarm) => void>;
     private mailHandler?: MailHandler;
     private dmeHandler?: DMEHandler;
+    prevAlarm: Alarm | null;
     timeout: number;
 
     constructor(config: config, logger: ILogger, emitter: EventEmitter, dirname: string) {
@@ -41,6 +42,8 @@ export default class AlarmHandler {
         this.alarmDB = new Low<TalarmDB>(adapter, defaultData)
 
         this.doTriggerAlarm = this.config.general.alarm;
+
+        this.prevAlarm = null;
 
         if (this.doTriggerAlarm) {
             this.logger.log('INFO', 'Alarmierung aktiv - Einkommende Alarmierungen werden sofort weitergeleitet!');
@@ -66,7 +69,9 @@ export default class AlarmHandler {
 
     start() {
         this.emitter.on('alarm', (alarm) => {
-            this.handleAlarm(alarm)
+            this.handleAlarm(alarm).then(() => {
+                this.prevAlarm = alarm;
+            } )
         });
 
         if (this.config.general.mail) {
