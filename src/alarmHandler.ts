@@ -122,10 +122,7 @@ export default class AlarmHandler {
         // last element from alarmDB
         lastAlarm.data = this.alarmDB.data.alarms.slice(-1)[0];
 
-        if (!this.doTriggerAlarm) {
-            this.logger.log('INFO', `Alarm nicht ausgelöst - Weiterleitung deaktiviert: ${this.logger.convertObject(alarm.data)}`);
-        }
-        else {
+        if (this.doTriggerAlarm) {
             alarm.compare(lastAlarm);
             if (alarm.data.origin == "mail") {
 
@@ -135,6 +132,8 @@ export default class AlarmHandler {
             for (let webhook of alarm.data.webhooks) {
                 this.handleHook(webhook);
             }
+        } else {
+            this.logger.log('INFO', `Alarm nicht ausgelöst - Weiterleitung deaktiviert: ${this.logger.convertObject(alarm.data)}`);
         }
 
         this.alarmDB.data.alarms.push(alarm.data)
