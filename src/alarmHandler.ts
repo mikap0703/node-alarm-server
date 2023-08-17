@@ -27,7 +27,7 @@ export default class AlarmHandler {
     private readonly triggerAlarm: OmitThisParameter<(alarm: Alarm) => void>;
     private mailHandler?: MailHandler;
     private dmeHandler?: DMEHandler;
-    prevAlarm: Alarm | null;
+    prevAlarm: Alarm;
     timeout: number;
 
     constructor(config: config, logger: ILogger, emitter: EventEmitter, dirname: string) {
@@ -43,7 +43,7 @@ export default class AlarmHandler {
 
         this.doTriggerAlarm = this.config.general.alarm;
 
-        this.prevAlarm = null;
+        this.prevAlarm = new AlarmFactory(logger).export();
 
         if (this.doTriggerAlarm) {
             this.logger.log('INFO', 'Alarmierung aktiv - Einkommende Alarmierungen werden sofort weitergeleitet!');
@@ -116,35 +116,45 @@ export default class AlarmHandler {
     }
 
     async handleAlarm(alarm: IAlarmFactory) {
-        if (alarm.data.id == "") {
+        if (alarm.data.id === "") {
             alarm.id(uuidv4());
         }
 
-        await this.alarmDB.read();
+        const prev = new AlarmFactory(this.logger);
+        prev.import(this.prevAlarm);
 
-        let lastAlarm = new AlarmFactory(this.logger);
-
-        // last element from alarmDB
-        lastAlarm.data = this.alarmDB.data.alarms.slice(-1)[0];
-
-        if (this.doTriggerAlarm) {
-            alarm.compare(lastAlarm);
-            if (alarm.data.origin == "mail") {
-
-            }
-            this.logger.log('INFO', `Alarm wird ausgelöst: ${this.logger.convertObject(alarm.data)}`);
-            this.triggerAlarm(alarm.data);
-            for (let webhook of alarm.data.webhooks) {
-                this.handleHook(webhook);
-            }
-        } else {
+        if (!this.doTriggerAlarm) {
             this.logger.log('INFO', `Alarm nicht ausgelöst - Weiterleitung deaktiviert: ${this.logger.convertObject(alarm.data)}`);
+            return;
         }
 
-        this.alarmDB.data.alarms.push(alarm.data)
+        if (alarm.data.origin === "dme") {
+            if (this.prevAlarm.origin === "mail" && alarm.compare(prev)) {
+                this.logger.log('INFO', "Alarm wird nicht ausgelöst - Alarm ist ein Duplikat");
+                return;
+            } else {
+                this.triggerAlarm(alarm.export());
+            }
+        } else if (alarm.data.origin === "mail") {
+            if (this.prevAlarm.origin === "dme" && alarm.compare(prev)) {
+                this.logger.log('INFO', "Alarm wird ausgelöst - Alarm ist ein präziseres Duplikat");
+                alarm.id(prev.export().id);
+            }
+            this.triggerAlarm(alarm.export());
+        } else {
+            this.logger.log('WARN', "Alarm wird nicht ausgelöst - Unbekannter Origin");
+            return;
+        }
+
+        for (const webhook of alarm.data.webhooks) {
+            this.handleHook(webhook);
+        }
+
+        this.alarmDB.data.alarms.push(alarm.data);
 
         await this.alarmDB.write();
     }
+
 
     handleHook(url: string) {
         axios.get(url)
