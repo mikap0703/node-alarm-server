@@ -127,7 +127,43 @@ export default class AlarmFactory implements IAlarmFactory{
     }
 
     compare(alarm: IAlarmFactory): number {
+        const timestampDifference = Math.abs(this.data.time - alarm.export().time);
+
+        if (timestampDifference >= 30000) {
+            return 0;
+        }
+
+        console.log(this.computeCharacterSimilarity(this.calculateFrequency(this.data.address.street), this.calculateFrequency(alarm.export().address.street)));
 
         return 1;
+    }
+
+    calculateFrequency(str: String): Map<string, number> {
+        let freqMap = new Map<string, number>;
+
+        for (let c of str) {
+            freqMap.set(c, (freqMap.get(c) || 0) + 1);
+        }
+
+        return freqMap;
+    }
+
+
+    computeCharacterSimilarity(freqMap1: Map<string, number>, freqMap2: Map<string, number>): number {
+        const allChars = new Set([...freqMap1.keys(), ...freqMap2.keys()]);
+
+        let intersectionCount = 0;
+        let unionCount = 0;
+
+        for (const char of allChars) {
+            const freq1 = freqMap1.get(char) || 0;
+            const freq2 = freqMap2.get(char) || 0;
+
+            intersectionCount += Math.min(freq1, freq2);
+            unionCount += Math.max(freq1, freq2);
+        }
+
+        const similarity = intersectionCount / unionCount;
+        return similarity;
     }
 }
