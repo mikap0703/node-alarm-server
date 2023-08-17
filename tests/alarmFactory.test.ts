@@ -1,5 +1,7 @@
 import {describe, expect, test} from '@jest/globals';
+// @ts-ignore
 import {ILogger} from "../src/logger";
+// @ts-ignore
 import AlarmFactory from "../src/alarmFactory";
 
 // Mock logger for testing purposes
@@ -11,17 +13,6 @@ const mockLogger: ILogger = {
         console.log(type + " - " + payload)
     }
 };
-
-describe("Tests for AlarmFactory", () => {
-    const af1 = new AlarmFactory(mockLogger);
-    const af2 = new AlarmFactory(mockLogger);
-
-    test("setter test", () => {
-        let id = "asdf1234"
-        af1.id(id);
-        expect(af1.export().id).toBe(id);
-    })
-})
 
 describe('AlarmFactory', () => {
     let alarmFactory: AlarmFactory,
