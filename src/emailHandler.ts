@@ -136,7 +136,7 @@ class MailHandler {
                 }
 
                 if (date) {
-                    mailDate = new Date(date).getDate();
+                    mailDate = new Date(date).getTime();
                 }
 
                 this.handleMailData(seqno, <string>fromAddr, <string>subject, html + text, mailDate);
@@ -148,6 +148,7 @@ class MailHandler {
     }
 
     handleMailData(id: number, sender: string, subject: string, content: string, date: number) {
+        console.log(new Date(date).toLocaleDateString())
         if ((Date.now() - date) / 1000 > this.maxAge) {
             this.logger.log('INFO', `[#${id}] Mail zu alt (${new Date(date).toLocaleDateString()}) - Alarm wird nicht ausgelöst`);
         }
@@ -156,7 +157,6 @@ class MailHandler {
                 if (subject === this.alarmSubject || this.alarmSubject === '*') {
                     this.logger.log('INFO', `[#${id}] Absender (${sender}) und Betreff (${subject}) stimmen überein - Mail #${id} wird ausgewertet!`)
                     let alarm = this.mailParser(id, content)
-                    console.log(content);
                     alarm.mailData({
                         id: id.toString(), sender, subject, content, date
                     });
