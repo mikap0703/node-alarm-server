@@ -69,9 +69,13 @@ export default class AlarmHandler {
 
     start() {
         this.emitter.on('alarm', (alarm) => {
-            this.handleAlarm(alarm).then(() => {
-                this.prevAlarm = alarm;
-            } )
+            this.handleAlarm(alarm).then(async (a) => {
+                this.prevAlarm = a.export();
+
+                await this.alarmDB.read();
+                this.alarmDB.data.alarms.push(alarm.data);
+                await this.alarmDB.write();
+            })
         });
 
         if (this.config.general.mail) {
@@ -116,7 +120,7 @@ export default class AlarmHandler {
     }
 
     async handleAlarm(alarm: IAlarmFactory) {
-        if (alarm.data.id === "") {
+        if (alarm.export().id === "") {
             alarm.id(uuidv4());
         }
 
@@ -125,17 +129,17 @@ export default class AlarmHandler {
 
         if (!this.doTriggerAlarm) {
             this.logger.log('INFO', `Alarm nicht ausgelöst - Weiterleitung deaktiviert: ${this.logger.convertObject(alarm.data)}`);
-            return;
+            return alarm;
         }
 
-        if (alarm.data.origin === "dme") {
+        if (alarm.export().origin === "dme") {
             if (this.prevAlarm.origin === "mail" && alarm.compare(prev)) {
                 this.logger.log('INFO', "Alarm wird nicht ausgelöst - Alarm ist ein Duplikat");
-                return;
+                return alarm;
             } else {
                 this.triggerAlarm(alarm.export());
             }
-        } else if (alarm.data.origin === "mail") {
+        } else if (alarm.export().origin === "mail") {
             if (this.prevAlarm.origin === "dme" && alarm.compare(prev)) {
                 this.logger.log('INFO', "Alarm wird ausgelöst - Alarm ist ein präziseres Duplikat");
                 alarm.id(prev.export().id);
@@ -143,16 +147,14 @@ export default class AlarmHandler {
             this.triggerAlarm(alarm.export());
         } else {
             this.logger.log('WARN', "Alarm wird nicht ausgelöst - Unbekannter Origin");
-            return;
+            return alarm;
         }
 
-        for (const webhook of alarm.data.webhooks) {
+        for (const webhook of alarm.export().webhooks) {
             this.handleHook(webhook);
         }
 
-        this.alarmDB.data.alarms.push(alarm.data);
-
-        await this.alarmDB.write();
+        return alarm;
     }
 
 
