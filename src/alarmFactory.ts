@@ -87,6 +87,31 @@ export default class AlarmFactory implements IAlarmFactory{
         return this.data;
     }
 
+    street(street: string): Alarm {
+        this.data.address.street = street;
+        return this.data;
+    }
+
+    city(city: string): Alarm {
+        this.data.address.city = city;
+        return this.data;
+    }
+
+    object(object: string): Alarm {
+        this.data.address.object = object;
+        return this.data;
+    }
+
+    objectId(objectId: string): Alarm {
+        this.data.address.objectId = objectId;
+        return this.data;
+    }
+
+    info(info: string): Alarm {
+        this.data.address.info = info;
+        return this.data;
+    }
+
     groups(groups: string[]): Alarm {
         this.data.groups = groups;
         return this.data;
