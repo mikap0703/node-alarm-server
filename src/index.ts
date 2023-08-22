@@ -29,4 +29,6 @@ setTimeout(() => {
 
 
 const backend = new Backend(dirname, 8112, logger, emitter)
-backend.start()
+backend.start().then(() => {
+    logger.log("INFO", "Backend gestartet!");
+})
