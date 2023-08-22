@@ -21,7 +21,7 @@ export default class Divera extends apiHandler {
             accesskey: this.apikey,
             Alarm: {
                 priority: true,
-                notification_type: this.generalConfig.diveraSettings.notificationType, // Empfänger-Auswahl (1 = Ausgewählte Standorte (nur in der PRO-Version), 2 = Alle des Standortes, 3 = Ausgewählte Gruppen, 4 = Ausgewählte Benutzer)
+                notification_type: "3", // Empfänger-Auswahl (1 = Ausgewählte Standorte (nur in der PRO-Version), 2 = Alle des Standortes, 3 = Ausgewählte Gruppen, 4 = Ausgewählte Benutzer)
                 foreign_id: alarm.id,
                 send_push: true,
                 title: alarm.title,
