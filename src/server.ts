@@ -2,18 +2,17 @@ import express, { Router } from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 import 'dotenv/config'
-import jwt from "jsonwebtoken";
 import {ILogger} from "./logger.js";
 import {EventEmitter} from "node:events";
 
 let preSharedSecret: string | undefined = process.env.API_ADMIN_SECRET;
 
-export default class Backend{
-    private port: number;
+export default class Backend {
+    private readonly port: number;
     private readonly logger: ILogger;
     private emitter: EventEmitter;
     private app: any;
-    private v1Router: Router;
+    private readonly v1Router: Router;
 
     constructor(dirname: string, port: number, logger: ILogger, emitter: EventEmitter) {
         this.port = port;
