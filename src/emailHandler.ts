@@ -39,11 +39,6 @@ class MailHandler {
             }
         });
 
-        const defaultMailParser = (id: number, content: string): AlarmFactory => {
-            this.logger.log("WARN", "Kein Mail-Parser definiert!");
-            return new AlarmFactory(this.logger);
-        }
-
         this.maxAge = mailConfig.maxAge;
         this.alarmSender = mailConfig.alarmSender;
         this.alarmSubject = mailConfig.alarmSubject;
@@ -51,12 +46,15 @@ class MailHandler {
         this.alarmTemplates = alarmTemplates;
         this.stichwoerter = mailConfig.stichwoerter;
 
-        this.mailParser = defaultMailParser;
-
         switch (mailConfig.mailSchema) {
             case "SecurCad":
                 this.mailParser = this.parseSecurCad;
                 break;
+            default:
+                this.mailParser = (id: number, content: string): AlarmFactory => {
+                    this.logger.log("WARN", `Mail (${id.toString()}) - kein Mail-Parser definiert!`);
+                    return new AlarmFactory(this.logger);
+                }
         }
     }
 
@@ -219,7 +217,7 @@ class MailHandler {
         let notfallgeschehen: string = tableData['Notfallgeschehen:']?.[0] || '';
 
         let objekt = tableData['Objekt:']?.[0] || '';
-        alarm.data.address.object = objekt;
+        alarm.object(objekt);
 
         if (notfallgeschehen) {
             const matchResult = notfallgeschehen.match(/\((.*?)\)/);
@@ -236,12 +234,10 @@ class MailHandler {
         alarm.text(sachverhalt ? (objekt ? sachverhalt + ' - ' + objekt : sachverhalt) : objekt);
 
         // Adresse
-        alarm.data.address.street = tableData['Strasse / Hs.-Nr.:']?.[0] || '';
-        if (alarm.data.address.street === '') {
-            alarm.data.address.street = tableData['Strasse:']?.[0] || '';
-        }
-        alarm.data.address.city = tableData['PLZ / Ort:']?.[0] || '';
-        alarm.data.address.info = tableData['Info:']?.[0] || '';
+        alarm.street(tableData['Strasse / Hs.-Nr.:']?.[0] || tableData['Strasse:']?.[0] || '');
+
+        alarm.city(tableData['PLZ / Ort:']?.[0] || '');
+        alarm.addressInfo(tableData['Info:']?.[0] || '');
 
         // Einsatzvorlagen anwenden - Empfängergruppen und alarmierte Fahrzeuge
         for (let keyword in this.alarmTemplateKeywords) {
