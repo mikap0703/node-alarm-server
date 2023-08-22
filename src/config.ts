@@ -5,7 +5,7 @@ import {ILogger} from "./logger.js";
 import {config} from "./types/Config.js";
 
 export default class configChecker {
-    private configDir: string;
+    private readonly configDir: string;
     private logger: ILogger;
     config: config;
     constructor(configDir: string, logger: ILogger) {
