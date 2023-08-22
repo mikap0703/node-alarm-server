@@ -69,7 +69,7 @@ export default class AlarmHandler {
 
     start() {
         this.emitter.on('alarm', (alarm) => {
-            this.handleAlarm(alarm).then(async (a) => {
+            this.handleAlarm(alarm).then(async (a: IAlarmFactory) => {
                 this.prevAlarm = a.export();
 
                 await this.alarmDB.read();
@@ -79,7 +79,7 @@ export default class AlarmHandler {
         });
 
         if (this.config.general.mail) {
-            let newMailHandler = () => {return new MailHandler(this.config.mail, this.config.alarmTemplates, this.logger, this.emitter)};
+            let newMailHandler = () => { return new MailHandler(this.config.mail, this.config.alarmTemplates, this.logger, this.emitter) };
             this.mailHandler = newMailHandler()
             this.mailHandler.start();
 
