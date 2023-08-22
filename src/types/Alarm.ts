@@ -42,6 +42,11 @@ export interface IAlarmFactory {
     time(time: number): Alarm;
     data: Alarm;
     address(address: Address): Alarm;
+    street(street: string): Alarm;
+    city(city: string): Alarm;
+    object(object: string): Alarm;
+    objectId(objectId: string): Alarm;
+    addressInfo(info: string): Alarm;
     groups(groups: string[]): Alarm;
     vehicles(vehicles: string[]): Alarm;
     members(members: string[]): Alarm;

@@ -107,7 +107,7 @@ export default class AlarmFactory implements IAlarmFactory{
         return this.data;
     }
 
-    info(info: string): Alarm {
+    addressInfo(info: string): Alarm {
         this.data.address.info = info;
         return this.data;
     }
