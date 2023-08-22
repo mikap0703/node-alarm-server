@@ -1,5 +1,5 @@
 import axios from "axios";
-import apiHandler, {ApiHandler} from "./apiHandler.js";
+import apiHandler from "./apiHandler.js";
 import {Alarm} from "../types/Alarm.js";
 
 export default class Divera extends apiHandler {
