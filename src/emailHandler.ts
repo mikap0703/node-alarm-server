@@ -220,7 +220,7 @@ class MailHandler {
         alarm.object(objekt);
 
         if (notfallgeschehen) {
-            const matchResult = notfallgeschehen.match(/\((.*?)\)/);
+            const matchResult = notfallgeschehen.match(/\((.*)\)/);
             if (matchResult) {
                 alarm.title(matchResult[1] || notfallgeschehen || "");
             } else {
