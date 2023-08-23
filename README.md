@@ -1,10 +1,42 @@
 # node-alarm-server
 
+## Features
+### Alarm-Dienste
+Folgende APIs und Alarm-Apps werden unterstützt:
+
+| Alarm-Dienst    | Unterstützt |
+|-----------------|-------------|
+| Divera (API v2) | ✅           |
+| RETTERAlarm     | 🔜          |
+| Telegram        | 🔜          |
+
+Weitere Möglichkeiten werden nach Bedarf hinzugefügt.
+
+### Alarm-Quellen
+#### E-Mail
+Die aktuelle Auswertung funktioniert mit einer flexiblen Tabellenauswertung.
+#### Digitaler Meldeempfänger
+Die aktuelle Auswertung funktioniert mit einem Boss 925 mit offener, serieller Schnittstelle.
+Weitere Melder werden nach Bedarf hinzugefügt.
+
+## Installation und Verwendung
+
+Das Programm wird vor allem auf Ubuntu Systemen getestet und verwendet NodeJS und Typescript.
+
+Zur Installation wird Docker empfohlen (Dokumentation folgt). Alternativ steht der folgende Wer zur Installation zur Verfügung:
+
+1. Repository clonen: `git clone https://github.com/mikap0703/node-alarm-server.git`
+2. Navigiere zum Projektverzeichnis: `cd ./node-alarm-server`
+3. Abhänigkeiten installieren: `npm install`
+4. Config-Dateien bearbeiten
+5. Programm starten `npm start`
+
+## Konfiguration
 ### Allgemeine Einstellungen - general.yml
 
 ```yaml
 # App zur Alarmierung hier angeben
-api: "Divera/Alamos/..."
+api: "Divera/RETTERAlarm/..."
 
 # API-Key/Accessschlüssel
 apiKey: asdf1234
@@ -20,13 +52,6 @@ mail: true
 
 # Weiterleiten von Alarmen aktivieren/deaktivieren
 alarm: false
-
-# Standard Einsatztitel
-defaultAlarmTitle: Einsatz
-
-# API spezifische Einstellungen, hier: Divera
-diveraSettings:
-notificationType: '3'
 ```
 
 ### Mail Einstellungen - mail.yml
