@@ -5,6 +5,5 @@ export type gConfig = {
     serialDME: boolean;
     mail: boolean;
     alarm: boolean;
-    defaultAlarmTitle: string;
     [key: string]: any;
 };
