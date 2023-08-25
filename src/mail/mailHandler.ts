@@ -2,10 +2,10 @@ import Imap, {Box, ImapMessage} from "imap";
 import {simpleParser, Source} from "mailparser";
 import {config} from "dotenv";
 import {JSDOM} from "jsdom";
-import AlarmFactory from "./alarmFactory.js";
-import {mailConfig} from "./types/Config.js";
-import {Alarm} from "./types/Alarm.js";
-import {ILogger} from "./logger.js";
+import AlarmFactory from "../alarmFactory.js";
+import {mailConfig} from "../types/Config.js";
+import {Alarm} from "../types/Alarm.js";
+import {ILogger} from "../logger.js";
 import {EventEmitter} from "node:events";
 
 config();

@@ -1,15 +1,15 @@
 import DiveraHandler from './apiHandlers/divera.js';
 import AlamosHandler from './apiHandlers/alamos.js';
-import MailHandler from "./emailHandler.js";
+import MailHandler from "./mail/mailHandler.js";
 import DMEHandler from "./dmeHandler.js";
 import axios from "axios";
 import { Low } from 'lowdb'
 import { JSONFile } from 'lowdb/node'
 import { join } from "path";
-import {config} from "./types/Config.js";
-import {ILogger} from "./logger.js";
-import {EventEmitter} from "node:events";
-import {Alarm, IAlarmFactory} from "./types/Alarm.js";
+import { config } from "./types/Config.js";
+import { ILogger } from "./logger.js";
+import { EventEmitter } from "node:events";
+import { Alarm, IAlarmFactory } from "./types/Alarm.js";
 import { v4 as uuidv4 } from 'uuid';
 import AlarmFactory from "./alarmFactory.js";
 
