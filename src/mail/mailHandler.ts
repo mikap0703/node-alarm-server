@@ -1,12 +1,12 @@
 import Imap, {Box, ImapMessage} from "imap";
 import {simpleParser, Source} from "mailparser";
 import {config} from "dotenv";
-import {JSDOM} from "jsdom";
 import AlarmFactory from "../alarmFactory.js";
 import {mailConfig} from "../types/Config.js";
 import {Alarm} from "../types/Alarm.js";
 import {ILogger} from "../logger.js";
 import {EventEmitter} from "node:events";
+import {securCADParser} from "./parser/securCAD.js";
 
 config();
 
@@ -17,10 +17,9 @@ class MailHandler {
     private readonly maxAge: number;
     private readonly alarmSender: string;
     private readonly alarmSubject: string;
-    private readonly alarmTemplateKeywords: Record<string, string>;
     private readonly alarmTemplates: Record<string, Alarm>;
-    private readonly stichwoerter: Record<string, string>;
-    private readonly mailParser: (seqno: number, content: string) => AlarmFactory;
+    private readonly mailSchema: string;
+    private readonly config: mailConfig;
 
     constructor(mailConfig: mailConfig, alarmTemplates: Record<string, Alarm>, logger: ILogger, emitter: EventEmitter) {
         this.logger = logger;
@@ -39,23 +38,17 @@ class MailHandler {
             }
         });
 
+        this.config = mailConfig;
         this.maxAge = mailConfig.maxAge;
         this.alarmSender = mailConfig.alarmSender;
         this.alarmSubject = mailConfig.alarmSubject;
-        this.alarmTemplateKeywords = mailConfig.alarmTemplateKeywords;
         this.alarmTemplates = alarmTemplates;
-        this.stichwoerter = mailConfig.stichwoerter;
+        this.mailSchema = mailConfig.mailSchema;
+    }
 
-        switch (mailConfig.mailSchema) {
-            case "SecurCad":
-                this.mailParser = this.parseSecurCad;
-                break;
-            default:
-                this.mailParser = (id: number, content: string): AlarmFactory => {
-                    this.logger.log("WARN", `Mail (${id.toString()}) - kein Mail-Parser definiert!`);
-                    return new AlarmFactory(this.logger);
-                }
-        }
+    private handleError(err: any) {
+        this.logger.log('ERROR', this.logger.convertObject(err));
+        this.emitter.emit('restartMailHandler');
     }
 
     start() {
@@ -66,8 +59,8 @@ class MailHandler {
         });
 
         this.connection.once('error', (err: any) => {
-            this.logger.log('ERROR', `Connection error: ${this.logger.convertObject(err)}`);
-            this.emitter.emit('restartMailHandler');
+            this.logger.log('ERROR', 'Connection Error');
+            this.handleError(err);
         });
     }
 
@@ -119,27 +112,13 @@ class MailHandler {
     evalMail(mail: Source, seqno: number) {
         simpleParser(mail)
             .then(parsed => {
-                let {from, subject, text, html, date} = parsed;
+                const { from, subject, text, html, date } = parsed;
+                const mailSubject = subject ?? '';
+                const fromAddr = from?.value[0].address ?? '';
+                const mailDate = date ? new Date(date).getTime() : 0;
+                const content = html + (text || ''); // Combine HTML and text content
 
-                let fromAddr: string | undefined;
-                let mailDate: number | undefined = 0;
-
-                if (from) {
-                    fromAddr = from.value[0].address;
-                }
-                else {
-                    fromAddr = "";
-                }
-
-                if (!text) {
-                    text = "";
-                }
-
-                if (date) {
-                    mailDate = new Date(date).getTime();
-                }
-
-                this.handleMailData(seqno, <string>fromAddr, <string>subject, html + text, mailDate);
+                this.handleMailData(seqno, fromAddr, mailSubject, content, mailDate);
             })
             .catch(err => {
                 this.logger.log('ERROR', `[#${seqno}] Fehler beim Parsen:`);
@@ -148,106 +127,50 @@ class MailHandler {
     }
 
     handleMailData(id: number, sender: string, subject: string, content: string, date: number) {
-        console.log(new Date(date).toLocaleDateString())
-        if ((Date.now() - date) / 1000 > this.maxAge) {
+        let currentTime = Date.now()
+        let isTooOld = (currentTime - date) / 1000 > this.maxAge;
+
+        if (isTooOld) {
             this.logger.log('INFO', `[#${id}] Mail zu alt (${new Date(date).toLocaleDateString()}) - Alarm wird nicht ausgelöst`);
         }
         else {
-            if (sender === this.alarmSender || this.alarmSender === '*') {
-                if (subject === this.alarmSubject || this.alarmSubject === '*') {
-                    this.logger.log('INFO', `[#${id}] Absender (${sender}) und Betreff (${subject}) stimmen überein - Mail #${id} wird ausgewertet!`)
-                    let alarm = this.mailParser(id, content)
-                    alarm.mailData({
-                        id: id.toString(), sender, subject, content, date
-                    });
-                    this.emitter.emit('alarm', alarm);
-                }
-                else {
-                    this.logger.log('INFO', `[#${id}] Falscher Betreff (${subject}) - Alarm wird nicht ausgelöst`);
-                }
+            let isMatchingSender = sender === this.alarmSender || this.alarmSender === '*';
+            let isMatchingSubject = subject === this.alarmSubject || this.alarmSubject === '*';
+
+            if (isMatchingSender && isMatchingSubject) {
+                this.logger.log('INFO', `[#${id}] Absender (${sender}) und Betreff (${subject}) stimmen überein - Mail #${id} wird ausgewertet!`)
+                let alarm = this.mailParser(id, content)
+                alarm.mailData({
+                    id: id.toString(),
+                    sender,
+                    subject,
+                    content,
+                    date
+                });
+
+                this.emitter.emit('alarm', alarm);
             }
-            else {
+            else if (!isMatchingSender) {
                 this.logger.log('INFO', `[#${id}] Falscher Absender (${sender}) - Alarm wird nicht ausgelöst`);
             }
-        }
-    }
-
-    extractTableData (html: string): Record<string, string[]> {
-        const dom: JSDOM = new JSDOM(html);
-        const tables = dom.window.document.getElementsByTagName("table");
-        const result: Record<string, string[]> = {};
-
-        for (let i: number = 0; i < tables.length; i++) {
-            const table: HTMLTableElement = tables[i];
-            const rows: HTMLCollectionOf<HTMLTableRowElement> = table.rows;
-
-            for (let j = 0; j < rows.length; j++) {
-                const row: HTMLTableRowElement = rows[j];
-                const rowData: string[] = [];
-
-                for (let k: number = 1; k < row.cells.length; k++) {
-                    const cell: HTMLTableCellElement = row.cells[k];
-                    rowData.push(cell.innerHTML.replace(/(&\w+;)|([\r\n\t]+)/g, '').trim());
-                }
-
-                const key: string | null = row.cells[0].textContent;
-                if (key) {
-                    result[key.trim()] = rowData;
-                }
+            else {
+                this.logger.log('INFO', `[#${id}] Falscher Betreff (${subject}) - Alarm wird nicht ausgelöst`);
             }
         }
-        return result;
     }
 
-    parseSecurCad(seqno: number, content: string): AlarmFactory {
-        const tableData = this.extractTableData(content);
-
-        let alarm = new AlarmFactory(this.logger);
+    mailParser(id: number, content: string): AlarmFactory {
+        const alarm = new AlarmFactory(this.logger);
         alarm.origin("mail");
         alarm.applyTemplate(this.alarmTemplates['default']);
 
-        // Einsatznummer - ID
-        let einsatznummer: string = tableData['Einsatznummer:']?.[0] || '';
-        alarm.id(einsatznummer.toString());
-
-        // Stichwort, Text und Einsatzobjekt
-        let stichwort: string = tableData['Einsatzstichwort:']?.[0] || '';
-        stichwort = this.stichwoerter[stichwort.toUpperCase()] || stichwort;
-        let sachverhalt: string = tableData['Sachverhalt:']?.[0] || '';
-        let notfallgeschehen: string = tableData['Notfallgeschehen:']?.[0] || '';
-
-        let objekt = tableData['Objekt:']?.[0] || '';
-        alarm.object(objekt);
-
-        if (notfallgeschehen) {
-            const matchResult = notfallgeschehen.match(/\((.*)\)/);
-            if (matchResult) {
-                alarm.title(matchResult[1] || notfallgeschehen || "");
-            } else {
-                alarm.title(notfallgeschehen || "");
-            }
-        } else if (stichwort) {
-            alarm.title(stichwort);
+        switch (this.mailSchema) {
+            case "SecurCad":
+                return securCADParser(id, content, alarm, this.config, this.alarmTemplates);
+            default:
+                this.logger.log("WARN", `Mail (${id.toString()}) - kein Mail-Parser definiert!`);
+                return new AlarmFactory(this.logger);
         }
-
-
-        alarm.text(sachverhalt ? (objekt ? sachverhalt + ' - ' + objekt : sachverhalt) : objekt);
-
-        // Adresse
-        alarm.street(tableData['Strasse / Hs.-Nr.:']?.[0] || tableData['Strasse:']?.[0] || '');
-
-        alarm.city(tableData['PLZ / Ort:']?.[0] || '');
-        alarm.addressInfo(tableData['Info:']?.[0] || '');
-
-        // Einsatzvorlagen anwenden - Empfängergruppen und alarmierte Fahrzeuge
-        for (let keyword in this.alarmTemplateKeywords) {
-            if (tableData[keyword]) {
-                // Keyword existiert in Alarm Mail
-                let template = this.alarmTemplateKeywords[keyword];
-                alarm.applyTemplate(this.alarmTemplates[template]);
-            }
-        }
-        return alarm;
     }
 }
 
