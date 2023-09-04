@@ -56,6 +56,8 @@ export default class Divera extends apiHandler {
             });
     }
 
+    updateAlarm = this.triggerAlarm;
+
     checkConnection() {
         axios.get('https://app.divera247.com/api/v2/pull/all?', { params: {
                 accesskey: this.apikey

@@ -12,6 +12,7 @@ import { EventEmitter } from "node:events";
 import { Alarm, IAlarmFactory } from "./types/Alarm.js";
 import { v4 as uuidv4 } from 'uuid';
 import AlarmFactory from "./alarmFactory.js";
+import Divera from "./apiHandlers/divera.js";
 
 type TalarmDB = {
     alarms: Alarm[];
@@ -29,6 +30,7 @@ export default class AlarmHandler {
     private dmeHandler?: DMEHandler;
     prevAlarm: Alarm;
     timeout: number;
+    private api: Divera;
 
     constructor(config: config, logger: ILogger, emitter: EventEmitter, dirname: string) {
         this.config = config;
@@ -55,10 +57,12 @@ export default class AlarmHandler {
         switch (this.config.general.api) {
             case "Divera":
                 let divera = new DiveraHandler(this.apiKey, this.logger, this.config.general);
+                this.api = divera;
                 this.triggerAlarm = divera.triggerAlarm.bind(divera);
                 break;
             case "Alamos":
                 let alamos = new AlamosHandler(this.apiKey, this.logger, this.config.general);
+                this.api = alamos;
                 this.triggerAlarm = alamos.triggerAlarm.bind(alamos);
                 break;
         }
@@ -137,14 +141,17 @@ export default class AlarmHandler {
                 this.logger.log('INFO', "Alarm wird nicht ausgelöst - Alarm ist ein Duplikat");
                 return alarm;
             } else {
-                this.triggerAlarm(alarm.export());
+                this.api.triggerAlarm(alarm.export());
             }
         } else if (alarm.export().origin === "mail") {
             if (this.prevAlarm.origin === "dme" && alarm.compare(prev)) {
                 this.logger.log('INFO', "Alarm wird ausgelöst - Alarm ist ein präziseres Duplikat");
                 alarm.id(prev.export().id);
+                this.api.updateAlarm(alarm.export());
             }
-            this.triggerAlarm(alarm.export());
+            else {
+                this.api.triggerAlarm(alarm.export());
+            }
         } else {
             this.logger.log('WARN', "Alarm wird nicht ausgelöst - Unbekannter Origin");
             return alarm;

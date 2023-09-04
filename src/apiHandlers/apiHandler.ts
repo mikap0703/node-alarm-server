@@ -25,6 +25,10 @@ export default class apiHandler implements ApiHandler {
         // Funktion, die den Alarm anhand des übergebenen Alarms auslöst
     }
 
+    updateAlarm(a: Alarm) {
+        // Funktion, die einen Alarm aktualisiert
+    }
+
     checkConnection() {
         // Funktion, die die API testet... Verifizierung des API-Schlüssels
     }
