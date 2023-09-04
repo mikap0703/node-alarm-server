@@ -72,9 +72,10 @@ export default class DMEHandler {
         this.port.close((err) => {
             if (err) {
                 this.logger.log('ERROR', 'Fehler beim Schließen des seriellen Ports: ' + err.message);
-                return;
             }
-            this.logger.log('INFO', 'Serieller Port geschlossen.');
+            else {
+                this.logger.log('INFO', 'Serieller Port geschlossen.');
+            }
         });
     }
 
