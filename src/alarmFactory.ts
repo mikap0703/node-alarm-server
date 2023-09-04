@@ -152,13 +152,20 @@ export default class AlarmFactory implements IAlarmFactory{
     }
 
     compare(alarm: IAlarmFactory): number {
+        // todo: toggle different comparing categories (disable comparing by time etc...)
+        // compare by time difference
         const timestampDifference = Math.abs(this.data.time - alarm.export().time);
 
         if (timestampDifference >= 30000) {
             return 0;
         }
 
-        console.log(this.computeCharacterSimilarity(this.calculateFrequency(this.data.address.street), this.calculateFrequency(alarm.export().address.street)));
+        // todo: compare categories
+        // compare by title
+        // compare by address
+        // compare by compare keywords
+
+        //console.log(this.computeCharacterSimilarity(this.calculateFrequency(this.data.address.street), this.calculateFrequency(alarm.export().address.street)));
 
         return 1;
     }
