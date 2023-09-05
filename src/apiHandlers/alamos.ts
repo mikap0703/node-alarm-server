@@ -6,7 +6,11 @@ export default class AlamosHandler extends apiHandler implements ApiHandler{
         this.logger.log('ERROR', 'Alamos Anbindung ist nicht implementiert');
     }
 
+    updateAlarm(a: Alarm) {
+        this.logger.log('ERROR', 'Alamos Anbindung ist nicht implementiert');
+    }
+
     checkConnection() {
-        // Funktion, die die API testet... Verifizierung des API-Schlüssels
+        this.logger.log('ERROR', 'Alamos Anbindung ist nicht implementiert');
     }
 }
