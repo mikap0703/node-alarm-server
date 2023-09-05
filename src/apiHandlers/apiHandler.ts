@@ -8,7 +8,7 @@ export interface ApiHandler {
     checkConnection(): void;
 }
 
-export default class apiHandler implements ApiHandler {
+export default abstract class apiHandler implements ApiHandler {
     protected apikey: string;
     protected logger: ILogger;
     protected generalConfig: any;
