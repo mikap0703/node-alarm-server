@@ -2,7 +2,7 @@ import express, { Router } from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 import 'dotenv/config'
-import {ILogger} from "./logger.js";
+import {ILogger} from "../logger.js";
 import {EventEmitter} from "node:events";
 
 let preSharedSecret: string | undefined = process.env.API_ADMIN_SECRET;
