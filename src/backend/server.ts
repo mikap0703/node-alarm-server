@@ -71,7 +71,7 @@ export default class Backend {
                     this.emitter.emit('dmeData', {
                         content: data.content
                     })
-                    console.log(data.content)
+
                     break;
             }
 
