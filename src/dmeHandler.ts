@@ -93,7 +93,8 @@ export default class DMEHandler {
         const [hours, minutes] = time.split(":").map(Number);
         const [day, month, year] = date.split(".").map(Number);
 
-        alarm.time(new Date(2000 + year, month - 1, day, hours, minutes).getTime() / 1000);
+        // alarm.time(new Date(2000 + year, month - 1, day, hours, minutes).getTime());
+        alarm.time(Date.now());
 
         for(let keyword of this.config.alarmList){
             if(msg.includes(keyword)) {
