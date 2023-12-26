@@ -1,7 +1,7 @@
 import apiHandler, {ApiHandler} from "./apiHandler.js";
 import {Alarm} from "../types/Alarm.js";
 
-export default class AlamosHandler extends apiHandler implements ApiHandler{
+export default class AlamosHandler extends apiHandler {
     triggerAlarm(alarm: Alarm) {
         this.logger.log('ERROR', 'Alamos Anbindung ist nicht implementiert');
     }
