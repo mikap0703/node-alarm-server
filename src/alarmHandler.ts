@@ -140,11 +140,12 @@ export default class AlarmHandler {
 
         switch (alarm.compare(prev)) {
             case AlarmCompareResult.UPDATE_ALARM:
-                // this.api.updateAlarm(alarm.export());
+                alarm.id(prev.export().id);
+                this.api.updateAlarm(alarm.export());
                 this.logger.log('INFO', `Alarm wird aktualisiert: ${this.logger.convertObject(alarm.data)}`);
                 break;
             case AlarmCompareResult.NEW_ALARM:
-                // this.api.triggerAlarm(alarm.export());
+                this.api.triggerAlarm(alarm.export());
                 this.logger.log('INFO', `Alarm wird ausgelöst: ${this.logger.convertObject(alarm.data)}`);
                 break;
             default:
