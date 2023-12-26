@@ -9,7 +9,7 @@ import { join } from "path";
 import { config } from "./types/Config.js";
 import { ILogger } from "./logger.js";
 import { EventEmitter } from "node:events";
-import { Alarm, IAlarmFactory } from "./types/Alarm.js";
+import {Alarm, AlarmCompareResult, IAlarmFactory} from "./types/Alarm.js";
 import { v4 as uuidv4 } from 'uuid';
 import AlarmFactory from "./alarmFactory.js";
 import Divera from "./apiHandlers/divera.js";
@@ -46,6 +46,7 @@ export default class AlarmHandler {
         this.doTriggerAlarm = this.config.general.alarm;
 
         this.prevAlarm = new AlarmFactory(logger).export();
+        this.prevAlarm.time = Date.now() * -1;
 
         if (this.doTriggerAlarm) {
             this.logger.log('INFO', 'Alarmierung aktiv - Einkommende Alarmierungen werden sofort weitergeleitet!');
@@ -136,25 +137,20 @@ export default class AlarmHandler {
             return alarm;
         }
 
-        if (alarm.export().origin === "dme") {
-            if (this.prevAlarm.origin === "mail" && alarm.compare(prev)) {
-                this.logger.log('INFO', "Alarm wird nicht ausgelöst - Alarm ist ein Duplikat");
-                return alarm;
-            } else {
-                this.api.triggerAlarm(alarm.export());
-            }
-        } else if (alarm.export().origin === "mail") {
-            if (this.prevAlarm.origin === "dme" && alarm.compare(prev)) {
-                this.logger.log('INFO', "Alarm wird ausgelöst - Alarm ist ein präziseres Duplikat");
-                alarm.id(prev.export().id);
-                this.api.updateAlarm(alarm.export());
-            }
-            else {
-                this.api.triggerAlarm(alarm.export());
-            }
-        } else {
-            this.logger.log('WARN', "Alarm wird nicht ausgelöst - Unbekannter Origin");
-            return alarm;
+
+        switch (alarm.compare(prev)) {
+            case AlarmCompareResult.UPDATE_ALARM:
+                // this.api.updateAlarm(alarm.export());
+                this.logger.log('INFO', `Alarm wird aktualisiert: ${this.logger.convertObject(alarm.data)}`);
+                break;
+            case AlarmCompareResult.NEW_ALARM:
+                // this.api.triggerAlarm(alarm.export());
+                this.logger.log('INFO', `Alarm wird ausgelöst: ${this.logger.convertObject(alarm.data)}`);
+                break;
+            default:
+                this.logger.log('INFO', `Alarm wird nicht ausgelöst - Alarm ist ein Duplikat: ${this.logger.convertObject(alarm.data)}`);
+                break
+
         }
 
         for (const webhook of alarm.export().webhooks) {
