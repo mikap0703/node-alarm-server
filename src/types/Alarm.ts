@@ -57,3 +57,10 @@ export interface IAlarmFactory {
     export(): Alarm;
     compare(alarm: IAlarmFactory): number;
 }
+
+// enum with 3 possible values
+export enum AlarmCompareResult {
+    UPDATE_ALARM = 0,
+    NEW_ALARM = 1,
+    DESTROY_ALARM = 2
+}
