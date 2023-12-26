@@ -1,4 +1,4 @@
-import {Address, Alarm, DmeData, IAlarmFactory, MailData} from "./types/Alarm.js";
+import {Address, Alarm, AlarmCompareResult, DmeData, IAlarmFactory, MailData} from "./types/Alarm.js";
 import {ILogger} from "./logger.js";
 
 export default class AlarmFactory implements IAlarmFactory{
@@ -151,13 +151,24 @@ export default class AlarmFactory implements IAlarmFactory{
         return this.data;
     }
 
-    compare(alarm: IAlarmFactory): number {
+    compare(compareToFactory: IAlarmFactory): AlarmCompareResult {
+        console.log("Vergleiche Alarm mit Alarm")
+        const compareTo = compareToFactory.export()
+        const thisAlarm = this.export()
+
         // todo: toggle different comparing categories (disable comparing by time etc...)
         // compare by time difference
-        const timestampDifference = Math.abs(this.data.time - alarm.export().time);
+        console.log(compareToFactory.export())
+        const timestampDifference = Math.abs(thisAlarm.time - compareTo.time);
 
-        if (timestampDifference >= 30000) {
-            return 0;
+
+        if (timestampDifference >= 5000) {
+            console.log("Alarm ist kein Duplikat - Zeitstempel zu unterschiedlich")
+            return AlarmCompareResult.NEW_ALARM;
+        }
+
+        if (thisAlarm.origin === "mail") {
+            return AlarmCompareResult.UPDATE_ALARM;
         }
 
         // todo: compare categories
@@ -165,37 +176,45 @@ export default class AlarmFactory implements IAlarmFactory{
         // compare by address
         // compare by compare keywords
 
-        //console.log(this.computeCharacterSimilarity(this.calculateFrequency(this.data.address.street), this.calculateFrequency(alarm.export().address.street)));
-
-        return 1;
+        return AlarmCompareResult.DESTROY_ALARM;
     }
 
-    calculateFrequency(str: String): Map<string, number> {
-        let freqMap = new Map<string, number>;
+    calculateCharFrequency(str: string): Map<string, number> {
+        const charFrequency = new Map<string, number>();
+        const normalizedStr = str.toLowerCase(); // Normalize to lowercase for case insensitivity
 
-        for (let c of str) {
-            freqMap.set(c, (freqMap.get(c) || 0) + 1);
+        for (const char of normalizedStr) {
+            if (char.match(/[a-z]/)) {
+                charFrequency.set(char, (charFrequency.get(char) || 0) + 1);
+            }
         }
 
-        return freqMap;
+        return charFrequency;
     }
 
+    calculateSimilarity(str1: string, str2: string): number {
+        const charFrequency1 = this.calculateCharFrequency(str1);
+        const charFrequency2 = this.calculateCharFrequency(str2);
 
-    computeCharacterSimilarity(freqMap1: Map<string, number>, freqMap2: Map<string, number>): number {
-        const allChars = new Set([...freqMap1.keys(), ...freqMap2.keys()]);
-
-        let intersectionCount = 0;
-        let unionCount = 0;
-
-        for (const char of allChars) {
-            const freq1 = freqMap1.get(char) || 0;
-            const freq2 = freqMap2.get(char) || 0;
-
-            intersectionCount += Math.min(freq1, freq2);
-            unionCount += Math.max(freq1, freq2);
+        // Calculate the total frequency of characters in both strings
+        let totalFrequency1 = 0;
+        for (const freq of charFrequency1.values()) {
+            totalFrequency1 += freq;
         }
 
-        const similarity = intersectionCount / unionCount;
-        return similarity;
+        let totalFrequency2 = 0;
+        for (const freq of charFrequency2.values()) {
+            totalFrequency2 += freq;
+        }
+
+        // Calculate the similarity score
+        let similarityScore = 0;
+        for (const [char, freq] of charFrequency1) {
+            if (charFrequency2.has(char)) {
+                similarityScore += Math.min(freq / totalFrequency1, charFrequency2.get(char)! / totalFrequency2);
+            }
+        }
+
+        return similarityScore;
     }
 }
