@@ -6,29 +6,47 @@ import Logger from "./logger.js";
 import Backend from "./backend/server.js";
 import { EventEmitter } from 'node:events';
 
-const filename = fileURLToPath(import.meta.url);
-const dirname = path.join(path.dirname(filename), '..');
 
-const logger = new Logger(dirname);
+class AlarmServer {
+    private readonly logger: Logger;
+    private readonly emitter: EventEmitter;
+    private readonly dirname: string;
+    config: configChecker;
+    alarmhandler: AlarmHandler;
 
-// Ordner, in dem sich die config YAML Dateien befinden wird angegeben
-const configFolder = process.env.DEV_CONFIG_PATH || './config';
-const configDir = path.join(dirname, configFolder);
+    constructor() {
+        const filename = fileURLToPath(import.meta.url);
+        this.dirname = path.join(path.dirname(filename), '..');
 
-const config = new configChecker(configDir, logger);
-config.getYaml();
+        this.logger = new Logger(this.dirname);
 
-const emitter = new EventEmitter();
+        // Ordner, in dem sich die config YAML Dateien befinden wird angegeben
+        const configFolder = process.env.DEV_CONFIG_PATH || './config';
+        const configDir = path.join(this.dirname, configFolder);
 
-const alarmhandler = new AlarmHandler(config.config, logger, emitter, dirname);
+        this.config = new configChecker(configDir, this.logger);
+        this.config.getYaml();
 
-// Alarmhandler wird nach einem Timeout gestartet
-setTimeout(() => {
-    alarmhandler.start()
-}, alarmhandler.timeout);
+        this.emitter = new EventEmitter();
 
+        this.alarmhandler = new AlarmHandler(this.config.config, this.logger, this.emitter, this.dirname);
+    }
 
-const backend = new Backend(dirname, 8112, logger, emitter)
-backend.start().then(() => {
-    logger.log("INFO", "Backend gestartet!");
-})
+    start(backendShouldStart: boolean = false): void {
+        // Alarmhandler wird nach einem Timeout gestartet
+        setTimeout(() => {
+            this.alarmhandler.start();
+        }, this.alarmhandler.timeout);
+
+        if (backendShouldStart) {
+            const backend = new Backend(this.dirname, 8112, this.logger, this.emitter);
+            backend.start().then(() => {
+                this.logger.log("INFO", "Backend gestartet!");
+            });
+        }
+    }
+}
+
+// Usage
+const alarmServer = new AlarmServer();
+alarmServer.start(true);
