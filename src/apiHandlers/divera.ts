@@ -43,8 +43,7 @@ export default class Divera extends apiHandler {
             .then((response) => {
                 if (response.data.success) {
                     this.logger.log('INFO', 'Alarm wurde erfolgreich ausgelöst!');
-                }
-                else {
+                } else {
                     this.logger.log('ERROR', 'Beim Auslösen des Alarms sind folgende Fehler aufgetreten:');
                     for (let notification of response.data.errors.notification_type) {
                         this.logger.log('ERROR', notification)
@@ -59,9 +58,11 @@ export default class Divera extends apiHandler {
     updateAlarm = this.triggerAlarm;
 
     checkConnection() {
-        axios.get('https://app.divera247.com/api/v2/pull/all?', { params: {
+        axios.get('https://app.divera247.com/api/v2/pull/all?', {
+            params: {
                 accesskey: this.apikey
-            }})
+            }
+        })
             .then((res) => {
                 this.instanceName = res.data.data.cluster.name;
                 this.logger.log('INFO', `Divera API erfolgreich authorisiert (${this.instanceName})`)

@@ -19,6 +19,8 @@ type TalarmDB = {
 }
 
 export default class AlarmHandler {
+    prevAlarm: Alarm;
+    timeout: number;
     private readonly doTriggerAlarm: boolean;
     private readonly apiKey: string;
     private config: config;
@@ -28,8 +30,6 @@ export default class AlarmHandler {
     private readonly triggerAlarm: OmitThisParameter<(alarm: Alarm) => void>;
     private mailHandler?: MailHandler;
     private dmeHandler?: DMEHandler;
-    prevAlarm: Alarm;
-    timeout: number;
     private api: Divera;
 
     constructor(config: config, logger: ILogger, emitter: EventEmitter, dirname: string) {
