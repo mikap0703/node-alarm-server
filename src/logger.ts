@@ -1,34 +1,34 @@
-import chalk from "chalk";
-import path from "path";
+import chalk from 'chalk'
+import path from 'path'
 
-type logType = "INFO" | "WARN" | "ERROR";
+type logType = 'INFO' | 'WARN' | 'ERROR'
 export interface ILogger {
-    log(type: logType, payload: string): void;
-    convertObject(o: any): string;
+  log: (type: logType, payload: string) => void
+  convertObject: (o: any) => string
 }
 export default class Logger implements ILogger {
-    private logDir: string;
-    constructor(dirname: string) {
-        this.logDir = path.join(dirname, "logs");
-    }
+  private readonly logDir: string
+  constructor (dirname: string) {
+    this.logDir = path.join(dirname, 'logs')
+  }
 
-    log (type: logType, payload: string) {
-        let doLog = chalk.red
-        switch (type) {
-            case 'INFO':
-                doLog = chalk.bold.green;
-                break
-            case 'WARN':
-                doLog = chalk.bold.yellow
-                break
-            case 'ERROR':
-                doLog = chalk.bold.red
-                break
-        }
-        console.log(doLog(`[${type}] - ${payload}`))
+  log (type: logType, payload: string) {
+    let doLog = chalk.red
+    switch (type) {
+      case 'INFO':
+        doLog = chalk.bold.green
+        break
+      case 'WARN':
+        doLog = chalk.bold.yellow
+        break
+      case 'ERROR':
+        doLog = chalk.bold.red
+        break
     }
+    console.log(doLog(`[${type}] - ${payload}`))
+  }
 
-    convertObject (o: any) {
-        return typeof(o) + ': ' + JSON.stringify(o, null, '\t')
-    }
+  convertObject (o: any) {
+    return typeof (o) + ': ' + JSON.stringify(o, null, '\t')
+  }
 }
