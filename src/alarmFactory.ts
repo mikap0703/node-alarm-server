@@ -80,7 +80,7 @@ export default class AlarmFactory implements IAlarmFactory {
   }
 
   text(text: string): Alarm {
-    this.data.title = text;
+    this.data.text = text;
     return this.data;
   }
 
