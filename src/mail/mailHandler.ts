@@ -1,4 +1,4 @@
-import Imap, { type Box, type ImapMessage } from "imap";
+import Imap, { type Box, type ImapMessage } from "node-imap";
 import { simpleParser, type Source } from "mailparser";
 import { config } from "dotenv";
 import AlarmFactory from "../alarmFactory.js";
@@ -13,7 +13,7 @@ config();
 class MailHandler {
   private readonly logger: ILogger;
   private readonly emitter: EventEmitter;
-  private readonly connection: any;
+  private readonly connection: Imap;
   private readonly maxAge: number;
   private readonly alarmSender: string;
   private readonly alarmSubject: string;
@@ -56,6 +56,7 @@ class MailHandler {
     this.connection.once("ready", () => {
       this.logger.log("INFO", "IMAP login erfolgreich!");
       this.openInbox();
+      this.fetchnMails(1);
     });
 
     this.connection.once("error", (err: any) => {
@@ -64,12 +65,29 @@ class MailHandler {
     });
   }
 
-  fetchnMails(n: number): boolean {
-    this.connection.openBox("INBOX", true, (err: any, box: Box) => {
-      if (err !== null) {
+  openInbox(): void {
+    this.connection.openBox("INBOX", true, (err: any) => {
+      if (err !== undefined && err !== null) {
         this.logger.log("ERROR", this.logger.convertObject(err));
+        return;
+      }
 
-        return false;
+      this.logger.log(
+        "INFO",
+        `Warten auf neue Mails von ${this.alarmSender} mit dem Betreff ${this.alarmSubject}`,
+      );
+
+      this.connection.on("mail", () => {
+        this.logger.log("INFO", "Neue Mail! Beginne mit Auswertung...");
+        this.fetchnMails(1);
+      });
+    });
+  }
+
+  fetchnMails(n: number): void {
+    this.connection.openBox("INBOX", true, (err: any, box: Box) => {
+      if (err !== undefined && err !== null) {
+        this.logger.log("ERROR", this.logger.convertObject(err));
       } else {
         n -= 1;
         const f = this.connection.seq.fetch(box.messages.total - n + ":*", {
@@ -90,37 +108,14 @@ class MailHandler {
           });
         });
 
-        f.once("error", (err: any) => {
+        f.on("error", (err: any) => {
           this.logger.log("ERROR", this.logger.convertObject(err));
         });
       }
     });
-
-    return true;
   }
 
-  openInbox(): boolean {
-    this.connection.openBox("INBOX", true, (err: any) => {
-      if (err !== null) {
-        this.logger.log("ERROR", this.logger.convertObject(err));
-        return false;
-      } else {
-        this.logger.log(
-          "INFO",
-          `Warten auf neue Mails von ${this.alarmSender} mit dem Betreff ${this.alarmSubject}`,
-        );
-
-        this.connection.on("mail", () => {
-          this.logger.log("INFO", "Neue Mail! Beginne mit Auswertung...");
-          this.fetchnMails(1);
-        });
-      }
-    });
-
-    return true;
-  }
-
-  evalMail(mail: Source, seqno: number): boolean {
+  evalMail(mail: Source, seqno: number): void {
     simpleParser(mail)
       .then((parsed) => {
         const { from, subject, text, html, date } = parsed;
@@ -134,10 +129,7 @@ class MailHandler {
       .catch((err) => {
         this.logger.log("ERROR", `[#${seqno}] Fehler beim Parsen:`);
         this.logger.log("ERROR", this.logger.convertObject(err));
-        return false;
       });
-
-    return true;
   }
 
   handleMailData(
