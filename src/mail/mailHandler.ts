@@ -56,7 +56,6 @@ class MailHandler {
     this.connection.once("ready", () => {
       this.logger.log("INFO", "IMAP login erfolgreich!");
       this.openInbox();
-      this.fetchnMails(1);
     });
 
     this.connection.once("error", (err: any) => {
