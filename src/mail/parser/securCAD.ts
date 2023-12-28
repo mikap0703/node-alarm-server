@@ -39,13 +39,15 @@ export function securCADParser(
     alarm.title(stichwort);
   }
 
-  alarm.text(
-    sachverhalt !== ""
-      ? objekt !== ""
-        ? sachverhalt + " - " + objekt
-        : sachverhalt
-      : objekt,
-  );
+  if (sachverhalt !== "") {
+    if (objekt !== "") {
+      alarm.text(sachverhalt + " - " + objekt);
+    } else {
+      alarm.text(sachverhalt);
+    }
+  } else {
+    alarm.text(objekt);
+  }
 
   // Adresse
   alarm.street(
