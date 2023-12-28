@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "outDir": "./built",
+    "sourceMap": true,
     "allowJs": true,
     //"checkJs": true,
     "strict": true,
