@@ -17,6 +17,7 @@ import {
 } from "./types/Alarm.js";
 import { v4 as uuidv4 } from "uuid";
 import AlarmFactory from "./alarmFactory.js";
+import MockApiHandler from "./apiHandlers/mockApiHandler.js";
 
 interface TalarmDB {
   alarms: Alarm[];
@@ -85,6 +86,10 @@ export default class AlarmHandler {
           this.logger,
           this.config.general,
         );
+        break;
+      case "Mock":
+      default:
+        this.api = new MockApiHandler("asdf", this.logger, this.config.general);
         break;
     }
 

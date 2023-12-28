@@ -1,7 +1,7 @@
 // import axios from 'axios'
 import { type Alarm } from "../types/Alarm.js";
 import { type ILogger } from "../logger.js";
-import { type gConfig } from "../types/gConfig.js";
+import { generalConfig } from "../types/Config.js";
 
 export interface ApiHandler {
   triggerAlarm: (alarm: Alarm) => void;
@@ -14,7 +14,7 @@ export default abstract class apiHandler implements ApiHandler {
   protected logger: ILogger;
   protected generalConfig: any;
 
-  constructor(apiKey: string, logger: ILogger, generalConfig: gConfig) {
+  constructor(apiKey: string, logger: ILogger, generalConfig: generalConfig) {
     this.apikey = apiKey;
     this.logger = logger;
     this.generalConfig = generalConfig;
