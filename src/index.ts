@@ -1,7 +1,7 @@
 import AlarmHandler from './alarmHandler.js'
 import { fileURLToPath } from 'url'
 import path from 'path'
-import configChecker from './config.js'
+import ConfigChecker from './config.js'
 import Logger from './logger.js'
 import Backend from './backend/server.js'
 import { EventEmitter } from 'node:events'
@@ -10,7 +10,7 @@ class AlarmServer {
   private readonly logger: Logger
   private readonly emitter: EventEmitter
   private readonly dirname: string
-  config: configChecker
+  config: ConfigChecker
   alarmhandler: AlarmHandler
 
   constructor () {
@@ -20,10 +20,10 @@ class AlarmServer {
     this.logger = new Logger(this.dirname)
 
     // Ordner, in dem sich die config YAML Dateien befinden wird angegeben
-    const configFolder = process.env.DEV_CONFIG_PATH || './config'
+    const configFolder = process.env.DEV_CONFIG_PATH ?? './config'
     const configDir = path.join(this.dirname, configFolder)
 
-    this.config = new configChecker(configDir, this.logger)
+    this.config = new ConfigChecker(configDir, this.logger)
     this.config.getYaml()
 
     this.emitter = new EventEmitter()
@@ -39,9 +39,13 @@ class AlarmServer {
 
     if (backendShouldStart) {
       const backend = new Backend(this.dirname, 8112, this.logger, this.emitter)
-      backend.start().then(() => {
-        this.logger.log('INFO', 'Backend gestartet!')
-      })
+      backend.start()
+        .then(() => {
+          this.logger.log('INFO', 'Backend gestartet!')
+        })
+        .catch((err) => {
+          this.logger.log('ERROR', 'Fehler beim Starten des Backends: ' + err.message)
+        })
     }
   }
 }

@@ -183,8 +183,8 @@ export default class AlarmFactory implements IAlarmFactory {
     const normalizedStr = str.toLowerCase() // Normalize to lowercase for case insensitivity
 
     for (const char of normalizedStr) {
-      if (char.match(/[a-z]/)) {
-        charFrequency.set(char, (charFrequency.get(char) || 0) + 1)
+      if (char.match(/[a-z]/) !== null) {
+        charFrequency.set(char, (charFrequency.get(char) ?? 0) + 1)
       }
     }
 
@@ -210,7 +210,7 @@ export default class AlarmFactory implements IAlarmFactory {
     let similarityScore = 0
     for (const [char, freq] of charFrequency1) {
       if (charFrequency2.has(char)) {
-        similarityScore += Math.min(freq / totalFrequency1, charFrequency2.get(char)! / totalFrequency2)
+        similarityScore += Math.min(freq / totalFrequency1, charFrequency2.get(char) ?? 0 / totalFrequency2)
       }
     }
 

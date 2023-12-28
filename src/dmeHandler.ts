@@ -32,27 +32,26 @@ export default class DMEHandler {
     this.parser = this.port.pipe(new ReadlineParser({ delimiter: this.config.delimiter }))
   }
 
-  start () {
+  start (): boolean {
     if (this.port.isOpen) {
       this.logger.log('WARN', 'Der serielle Port ist bereits geöffnet.')
       this.emitter.emit('restartDmeHandler')
-      return
+      return false
     }
     this.port.open((err) => {
-      if (err) {
+      if (err !== null) {
         this.logger.log('ERROR', 'Fehler beim Öffnen des seriellen Ports: ' + err.message)
         this.emitter.emit('restartDmeHandler')
-        return
       }
       this.logger.log('INFO', 'Serieller Port geöffnet: ' + this.path + ', Baudrate: ' + this.baudrate)
     })
 
-    this.parser.on('data', (data) => {
+    this.parser.on('data', (data: string) => {
       // Entfernt Nicht-ASCII-Zeichen aus den empfangenen Daten.
       console.log(data)
-      data = data.replace(/[^\x00-\x7F]/g, '')
+      const stringData: string = data.replace(/[^\x00-\x7F]/g, '').toString()
       // Verarbeitet die empfangenen Daten
-      this.handleDMEData(data)
+      this.handleDMEData(stringData)
     })
 
     this.port.on('data', (data) => {
@@ -66,31 +65,38 @@ export default class DMEHandler {
     this.port.on('error', (err) => {
       this.logger.log('ERROR', 'Fehler beim Lesen des seriellen Ports: ' + err.message)
     })
+
+    return true
   }
 
-  stop () {
+  stop (): boolean {
     this.port.close((err) => {
-      if (err) {
+      if (err !== null) {
         this.logger.log('ERROR', 'Fehler beim Schließen des seriellen Ports: ' + err.message)
       } else {
         this.logger.log('INFO', 'Serieller Port geschlossen.')
       }
     })
+
+    return true
   }
 
-  handleDMEData (dmeContent: string) {
+  handleDMEData (dmeContent: string): boolean {
     // preparing AlarmFactory
     const alarm = new AlarmFactory(this.logger)
     alarm.origin('dme')
     alarm.applyTemplate(this.alarmTemplates.default)
 
     // parsing data from DME
-    const [dateString, ric, msg] = dmeContent.split(/\r\n\0|\r\n|\n/).slice(-3)
+    // const [dateString, ric, msg] = dmeContent.split(/\r\n\0|\r\n|\n/).slice(-3)
+    const tempArray = dmeContent.split(/\r\n\0|\r\n|\n/).slice(-3)
+    const ric = tempArray[1]
+    const msg = tempArray[2]
 
     // extract the date and time components from the string
-    const [time, date] = dateString.split(' ')
-    const [hours, minutes] = time.split(':').map(Number)
-    const [day, month, year] = date.split('.').map(Number)
+    // const [time, date] = dateString.split(' ')
+    // const [hours, minutes] = time.split(':').map(Number)
+    // const [day, month, year] = date.split('.').map(Number)
 
     // alarm.time(new Date(2000 + year, month - 1, day, hours, minutes).getTime());
     alarm.time(Date.now())
@@ -104,7 +110,7 @@ export default class DMEHandler {
 
     alarm.text(msg)
 
-    const template = this.config.rics[ric] || ''
+    const template = this.config.rics[ric] ?? ''
     if (template === '') {
       this.logger.log('INFO', `DME Alarm angekommen - RIC "${ric}" - kein AlarmTemplate gefunden!`)
     } else {
@@ -116,5 +122,7 @@ export default class DMEHandler {
     })
 
     this.emitter.emit('alarm', alarm)
+
+    return true
   }
 }

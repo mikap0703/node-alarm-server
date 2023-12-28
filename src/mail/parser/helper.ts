@@ -19,7 +19,7 @@ export function extractTableData (html: string): Record<string, string[]> {
       }
 
       const key: string | null = row.cells[0].textContent
-      if (key) {
+      if (key != null) {
         result[key.trim()] = rowData
       }
     }

@@ -46,12 +46,12 @@ class MailHandler {
     this.mailSchema = mailConfig.mailSchema
   }
 
-  private handleError (err: any) {
+  private handleError (err: any): void {
     this.logger.log('ERROR', this.logger.convertObject(err))
     this.emitter.emit('restartMailHandler')
   }
 
-  start () {
+  start (): void {
     this.connection.connect()
     this.connection.once('ready', () => {
       this.logger.log('INFO', 'IMAP login erfolgreich!')
@@ -64,10 +64,12 @@ class MailHandler {
     })
   }
 
-  fetchnMails (n: number) {
+  fetchnMails (n: number): boolean {
     this.connection.openBox('INBOX', true, (err: any, box: Box) => {
-      if (err) {
+      if (err !== null) {
         this.logger.log('ERROR', this.logger.convertObject(err))
+
+        return false
       } else {
         n -= 1
         const f = this.connection.seq.fetch((box.messages.total - n) + ':*', { bodies: '', struct: true })
@@ -90,12 +92,15 @@ class MailHandler {
         })
       }
     })
+
+    return true
   }
 
-  openInbox () {
+  openInbox (): boolean {
     this.connection.openBox('INBOX', true, (err: any) => {
-      if (err) {
+      if (err !== null) {
         this.logger.log('ERROR', this.logger.convertObject(err))
+        return false
       } else {
         this.logger.log('INFO', `Warten auf neue Mails von ${this.alarmSender} mit dem Betreff ${this.alarmSubject}`)
 
@@ -105,31 +110,38 @@ class MailHandler {
         })
       }
     })
+
+    return true
   }
 
-  evalMail (mail: Source, seqno: number) {
+  evalMail (mail: Source, seqno: number): boolean {
     simpleParser(mail)
       .then(parsed => {
         const { from, subject, text, html, date } = parsed
         const mailSubject = subject ?? ''
         const fromAddr = from?.value[0].address ?? ''
-        const mailDate = date ? new Date(date).getTime() : 0
-        const content = html + (text || '') // Combine HTML and text content
+        const mailDate = new Date(date ?? 0).getTime()
+        const content = html + (text ?? '') // Combine HTML and text content
 
         this.handleMailData(seqno, fromAddr, mailSubject, content, mailDate)
       })
       .catch(err => {
         this.logger.log('ERROR', `[#${seqno}] Fehler beim Parsen:`)
         this.logger.log('ERROR', this.logger.convertObject(err))
+        return false
       })
+
+    return true
   }
 
-  handleMailData (id: number, sender: string, subject: string, content: string, date: number) {
+  handleMailData (id: number, sender: string, subject: string, content: string, date: number): boolean {
     const currentTime = Date.now()
     const isTooOld = (currentTime - date) / 1000 > this.maxAge
 
     if (isTooOld) {
       this.logger.log('INFO', `[#${id}] Mail zu alt (${new Date(date).toLocaleDateString()}) - Alarm wird nicht ausgelöst`)
+
+      return false
     } else {
       const isMatchingSender = sender === this.alarmSender || this.alarmSender === '*'
       const isMatchingSubject = subject === this.alarmSubject || this.alarmSubject === '*'
@@ -146,10 +158,15 @@ class MailHandler {
         })
 
         this.emitter.emit('alarm', alarm)
+        return true
       } else if (!isMatchingSender) {
         this.logger.log('INFO', `[#${id}] Falscher Absender (${sender}) - Alarm wird nicht ausgelöst`)
+
+        return false
       } else {
         this.logger.log('INFO', `[#${id}] Falscher Betreff (${subject}) - Alarm wird nicht ausgelöst`)
+
+        return false
       }
     }
   }

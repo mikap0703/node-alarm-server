@@ -10,40 +10,40 @@ export function securCADParser (seqno: number, content: string, alarm: AlarmFact
   const tableData = extractTableData(content)
 
   // Einsatznummer - ID
-  const einsatznummer: string = tableData['Einsatznummer:']?.[0] || ''
+  const einsatznummer: string = tableData['Einsatznummer:']?.[0] ?? ''
   alarm.id(einsatznummer.toString())
 
   // Stichwort, Text und Einsatzobjekt
-  let stichwort: string = tableData['Einsatzstichwort:']?.[0] || ''
-  stichwort = stichwoerter[stichwort.toUpperCase()] || stichwort
-  const sachverhalt: string = tableData['Sachverhalt:']?.[0] || ''
-  const notfallgeschehen: string = tableData['Notfallgeschehen:']?.[0] || ''
+  let stichwort: string = tableData['Einsatzstichwort:']?.[0] ?? ''
+  stichwort = stichwoerter[stichwort.toUpperCase()] ?? stichwort
+  const sachverhalt: string = tableData['Sachverhalt:']?.[0] ?? ''
+  const notfallgeschehen: string = tableData['Notfallgeschehen:']?.[0] ?? ''
 
-  const objekt = tableData['Objekt:']?.[0] || ''
+  const objekt = tableData['Objekt:']?.[0] ?? ''
   alarm.object(objekt)
 
-  if (notfallgeschehen) {
+  if (notfallgeschehen !== '') {
     const matchResult = notfallgeschehen.match(/\((.*)\)/)
-    if (matchResult) {
-      alarm.title(matchResult[1] || notfallgeschehen || '')
+    if (matchResult != null) {
+      alarm.title(matchResult[1] ?? notfallgeschehen ?? '')
     } else {
-      alarm.title(notfallgeschehen || '')
+      alarm.title(notfallgeschehen ?? '')
     }
-  } else if (stichwort) {
+  } else if (stichwort !== '') {
     alarm.title(stichwort)
   }
 
-  alarm.text(sachverhalt ? (objekt ? sachverhalt + ' - ' + objekt : sachverhalt) : objekt)
+  alarm.text(sachverhalt !== '' ? (objekt !== '' ? sachverhalt + ' - ' + objekt : sachverhalt) : objekt)
 
   // Adresse
-  alarm.street(tableData['Strasse / Hs.-Nr.:']?.[0] || tableData['Strasse:']?.[0] || '')
+  alarm.street(tableData['Strasse / Hs.-Nr.:']?.[0] ?? tableData['Strasse:']?.[0] ?? '')
 
-  alarm.city(tableData['PLZ / Ort:']?.[0] || '')
-  alarm.addressInfo(tableData['Info:']?.[0] || '')
+  alarm.city(tableData['PLZ / Ort:']?.[0] ?? '')
+  alarm.addressInfo(tableData['Info:']?.[0] ?? '')
 
   // Einsatzvorlagen anwenden - Empfängergruppen und alarmierte Fahrzeuge
   for (const keyword in alarmTemplateKeywords) {
-    if (tableData[keyword]) {
+    if (tableData[keyword] != null) {
       // Keyword existiert in Alarm Mail
       const template = alarmTemplateKeywords[keyword]
       alarm.applyTemplate(alarmTemplates[template])

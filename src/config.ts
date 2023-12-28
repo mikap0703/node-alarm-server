@@ -4,7 +4,7 @@ import fs from 'fs'
 import { type ILogger } from './logger.js'
 import { type config } from './types/Config.js'
 
-export default class configChecker {
+export default class ConfigChecker {
   private readonly configDir: string
   private readonly logger: ILogger
   config: config
@@ -25,7 +25,7 @@ export default class configChecker {
     }
   }
 
-  getYaml () {
+  getYaml (): boolean {
     try {
       const generalConfigFile = fs.readFileSync(path.join(this.configDir, 'general.yml'), 'utf-8')
       this.config.general = YAML.parse(generalConfigFile)
@@ -38,9 +38,13 @@ export default class configChecker {
 
       const alarmTemplatesFile = fs.readFileSync(path.join(this.configDir, 'alarmTemplates.yml'), 'utf-8')
       this.config.alarmTemplates = YAML.parse(alarmTemplatesFile)
+
+      return true
     } catch (err: any) {
       this.logger.log('ERROR', 'Fehler beim Parsen der YAML-Dateien!')
       this.logger.log('ERROR', this.logger.convertObject(err))
+
+      return false
     }
   }
 }

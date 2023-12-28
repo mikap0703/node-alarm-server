@@ -12,7 +12,7 @@ export default class Logger implements ILogger {
     this.logDir = path.join(dirname, 'logs')
   }
 
-  log (type: logType, payload: string) {
+  log (type: logType, payload: string): void {
     let doLog = chalk.red
     switch (type) {
       case 'INFO':
@@ -28,7 +28,7 @@ export default class Logger implements ILogger {
     console.log(doLog(`[${type}] - ${payload}`))
   }
 
-  convertObject (o: any) {
+  convertObject (o: any): string {
     return typeof (o) + ': ' + JSON.stringify(o, null, '\t')
   }
 }

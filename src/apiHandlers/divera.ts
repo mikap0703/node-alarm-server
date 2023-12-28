@@ -3,10 +3,10 @@ import apiHandler from './apiHandler.js'
 import { type Alarm } from '../types/Alarm.js'
 
 export default class Divera extends apiHandler {
-  triggerAlarm (alarm: Alarm) {
+  triggerAlarm (alarm: Alarm): void {
     let address = ''
-    if (alarm.address.street != '') {
-      if (alarm.address.city != '') {
+    if (alarm.address.street !== '') {
+      if (alarm.address.city !== '') {
         address = alarm.address.street + ', ' + alarm.address.city
       } else {
         address = alarm.address.street
@@ -41,12 +41,13 @@ export default class Divera extends apiHandler {
       }
     })
       .then((response) => {
-        if (response.data.success) {
+        if (response.data.success === true) {
           this.logger.log('INFO', 'Alarm wurde erfolgreich ausgelöst!')
         } else {
           this.logger.log('ERROR', 'Beim Auslösen des Alarms sind folgende Fehler aufgetreten:')
           for (const notification of response.data.errors.notification_type) {
-            this.logger.log('ERROR', notification)
+            const stringNotification: string = notification.toString()
+            this.logger.log('ERROR', stringNotification)
           }
         }
       })
@@ -55,9 +56,9 @@ export default class Divera extends apiHandler {
       })
   }
 
-  updateAlarm = this.triggerAlarm
+  updateAlarm = this.triggerAlarm.bind(this)
 
-  checkConnection () {
+  checkConnection (): void {
     axios.get('https://app.divera247.com/api/v2/pull/all?', {
       params: {
         accesskey: this.apikey

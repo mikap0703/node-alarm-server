@@ -1,4 +1,4 @@
-import axios from 'axios'
+// import axios from 'axios'
 import { type Alarm } from '../types/Alarm.js'
 import { type ILogger } from '../logger.js'
 import { type gConfig } from '../types/gConfig.js'
@@ -21,15 +21,15 @@ export default abstract class apiHandler implements ApiHandler {
     this.checkConnection()
   }
 
-  triggerAlarm (a: Alarm) {
+  triggerAlarm (a: Alarm): void {
     // Funktion, die den Alarm anhand des übergebenen Alarms auslöst
   }
 
-  updateAlarm (a: Alarm) {
+  updateAlarm (a: Alarm): void {
     // Funktion, die einen Alarm aktualisiert
   }
 
-  checkConnection () {
+  checkConnection (): void {
     // Funktion, die die API testet... Verifizierung des API-Schlüssels
   }
 }

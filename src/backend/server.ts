@@ -13,6 +13,7 @@ export default class Backend {
   private readonly emitter: EventEmitter
   private readonly app: any
   private readonly v1Router: Router
+  private readonly authenticate: (req: any, res: any, next: any) => any
 
   constructor (dirname: string, port: number, logger: ILogger, emitter: EventEmitter) {
     this.port = port
@@ -26,17 +27,26 @@ export default class Backend {
     this.app.use(cors())
     this.app.use(bodyParser.json())
 
+    this.authenticate = (req: any, res: any, next: any) => {
+      const token = req.headers.authorization
+
+      if (token == null) return res.status(401).send({ err: 'Nicht authorisiert!' })
+      if (token === preSharedSecret && token !== '') {
+        next()
+      }
+    }
+
     this.app.use('/api/v1', this.v1Router)
   }
 
-  async start () {
+  async start (): Promise<void> {
     // await this.userDB.read();
     // API
     this.v1Router.get('/healthcheck', (req, res) => {
       res.end('ok')
     })
 
-    this.v1Router.post('/auth/login', async (req, res) => {
+    this.v1Router.post('/auth/login', (req, res) => {
       const data = req.body
 
       if (data.preSharedSecret === preSharedSecret) {
@@ -46,9 +56,9 @@ export default class Backend {
                 }, adminSecret, { expiresIn: '5d' });
                  */
 
-        return res.status(200).send({ msg: 'Erfolgreich angemeldet!' })
+        res.status(200).send({ msg: 'Erfolgreich angemeldet!' })
       } else {
-        return res.status(401).send({ msg: 'Falsches Passwort!' })
+        res.status(401).send({ msg: 'Falsches Passwort!' })
       }
     })
 
@@ -84,14 +94,5 @@ export default class Backend {
     this.app.listen(this.port, () => {
       this.logger.log('INFO', 'API listening on port ' + this.port)
     })
-  }
-
-  async authenticate (req: any, res: any, next: any) {
-    const token = req.headers.authorization
-
-    if (token == null) return res.status(401).send({ err: 'Nicht authorisiert!' })
-    if (token == preSharedSecret && token != '') {
-      next()
-    }
   }
 }

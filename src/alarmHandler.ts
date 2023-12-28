@@ -56,35 +56,40 @@ export default class AlarmHandler {
 
     this.apiKey = this.config.general.apiKey
     switch (this.config.general.api) {
+      // TODO: Add Mock API Handler
       case 'Divera':
-        const divera = new DiveraHandler(this.apiKey, this.logger, this.config.general)
-        this.api = divera
-        this.triggerAlarm = divera.triggerAlarm.bind(divera)
+        this.api = new DiveraHandler(this.apiKey, this.logger, this.config.general)
         break
       case 'Alamos':
-        const alamos = new AlamosHandler(this.apiKey, this.logger, this.config.general)
-        this.api = alamos
-        this.triggerAlarm = alamos.triggerAlarm.bind(alamos)
+        this.api = new AlamosHandler(this.apiKey, this.logger, this.config.general)
         break
     }
+
+    this.triggerAlarm = this.api.triggerAlarm.bind(this.api)
 
     this.timeout = 5000
     this.logger.log('INFO', `Timeout - Alarmhandler wird in ${this.timeout / 1000} Sekunden gestartet`)
   }
 
-  start () {
+  start (): void {
     this.emitter.on('alarm', (alarm) => {
-      this.handleAlarm(alarm).then(async (a: IAlarmFactory) => {
-        this.prevAlarm = a.export()
+      if (alarm instanceof AlarmFactory) {
+        void this.handleAlarm(alarm).then((a: IAlarmFactory): void => {
+          this.prevAlarm = a.export()
 
-        await this.alarmDB.read()
-        this.alarmDB.data.alarms.push(alarm.data)
-        await this.alarmDB.write()
-      })
+          void this.alarmDB.read().then(() => {
+            this.alarmDB.data.alarms.push(alarm.data)
+          }).then(() => {
+            void this.alarmDB.write().then(r => {
+              this.logger.log('INFO', 'Alarm wurde gespeichert')
+            })
+          })
+        })
+      }
     })
 
     if (this.config.general.mail) {
-      const newMailHandler = () => { return new MailHandler(this.config.mail, this.config.alarmTemplates, this.logger, this.emitter) }
+      const newMailHandler = (): MailHandler => { return new MailHandler(this.config.mail, this.config.alarmTemplates, this.logger, this.emitter) }
       this.mailHandler = newMailHandler()
       this.mailHandler.start()
 
@@ -97,13 +102,13 @@ export default class AlarmHandler {
       })
 
       this.emitter.on('mailData', (data) => {
-        if (this.mailHandler) {
-          this.mailHandler.handleMailData(data.id, data.sender, data.subject, data.content, data.date)
+        if (this.mailHandler !== undefined) {
+          this.mailHandler.handleMailData(Number(data.id), String(data.sender), String(data.subject), String(data.content), Number(data.date))
         }
       })
     }
     if (this.config.general.serialDME) {
-      const newDmeHandler = () => { return new DMEHandler(this.config.serialDME, this.config.alarmTemplates, this.logger, this.emitter) }
+      const newDmeHandler = (): DMEHandler => { return new DMEHandler(this.config.serialDME, this.config.alarmTemplates, this.logger, this.emitter) }
       this.dmeHandler = newDmeHandler()
       this.dmeHandler.start()
 
@@ -116,15 +121,16 @@ export default class AlarmHandler {
       })
 
       this.emitter.on('dmeData', (data) => {
-        if (this.dmeHandler) {
-          console.log(data)
-          this.dmeHandler.handleDMEData(data.content)
+        if (this.dmeHandler !== undefined) {
+          const stringContent: string = data.content.toString() ?? ''
+          console.log(stringContent)
+          this.dmeHandler.handleDMEData(stringContent)
         }
       })
     }
   }
 
-  async handleAlarm (alarm: IAlarmFactory) {
+  async handleAlarm (alarm: IAlarmFactory): Promise<IAlarmFactory> {
     if (alarm.export().id === '') {
       alarm.id(uuidv4())
     }
@@ -159,7 +165,7 @@ export default class AlarmHandler {
     return alarm
   }
 
-  handleHook (url: string) {
+  handleHook (url: string): void {
     axios.get(url)
       .then((res) => {
         this.logger.log('INFO', `WebHook ${url} aufgerufen...Status ${res.status}`)
