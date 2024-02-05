@@ -56,6 +56,15 @@ export function securCADParser(
 
   alarm.city(tableData["PLZ / Ort:"]?.[0] ?? "");
   alarm.addressInfo(tableData["Info:"]?.[0] ?? "");
+  alarm.utm(tableData["UTM - Koordinaten:"]?.[0] ?? "");
+
+  if (alarm.data.address.info !== "") {
+    alarm.addToText("\n" + alarm.data.address.info);
+  }
+
+  if (alarm.data.address.utm !== "") {
+    alarm.addToText("\n\n" + "UTM: " + alarm.data.address.utm);
+  }
 
   // Einsatzvorlagen anwenden - Empfängergruppen und alarmierte Fahrzeuge
   for (const keyword in alarmTemplateKeywords) {

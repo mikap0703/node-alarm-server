@@ -31,7 +31,7 @@ export default class Divera extends apiHandler {
           foreign_id: alarm.id,
           send_push: true,
           title: alarm.title,
-          text: alarm.text + "\n" + alarm.address.info,
+          text: alarm.text,
           address,
           scene_object: alarm.address.object,
           group: alarm.groups,
