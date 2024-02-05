@@ -4,6 +4,7 @@ export interface Address {
   object: string;
   objectId: string;
   info: string;
+  utm: string;
 }
 
 export interface MailData {

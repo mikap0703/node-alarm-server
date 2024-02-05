@@ -26,6 +26,7 @@ export default class AlarmFactory implements IAlarmFactory {
         object: "",
         objectId: "",
         info: "",
+        utm: "",
       },
       groups: [],
       vehicles: [],
@@ -84,6 +85,11 @@ export default class AlarmFactory implements IAlarmFactory {
     return this.data;
   }
 
+  addToText(text: string): Alarm {
+    this.data.text += text;
+    return this.data;
+  }
+
   time(time: number): Alarm {
     this.data.time = time;
     return this.data;
@@ -116,6 +122,11 @@ export default class AlarmFactory implements IAlarmFactory {
 
   addressInfo(info: string): Alarm {
     this.data.address.info = info;
+    return this.data;
+  }
+
+  utm(utmCoords: string): Alarm {
+    this.data.address.utm = utmCoords;
     return this.data;
   }
 
