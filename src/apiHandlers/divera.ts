@@ -6,7 +6,7 @@ export default class Divera extends apiHandler {
   updateAlarm = this.triggerAlarm.bind(this)
 
   triggerAlarm (alarm: Alarm): void {
-    let address = ''
+    let address: string
     if (alarm.address.street !== '') {
       if (alarm.address.city !== '') {
         address = alarm.address.street + ', ' + alarm.address.city

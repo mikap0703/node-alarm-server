@@ -116,7 +116,7 @@ export default class AlarmHandler {
               this.alarmDB.data.alarms.push(alarm.data)
             })
             .then(() => {
-              void this.alarmDB.write().then((r) => {
+              void this.alarmDB.write().then(() => {
                 this.logger.log('INFO', 'Alarm wurde gespeichert')
               })
             })

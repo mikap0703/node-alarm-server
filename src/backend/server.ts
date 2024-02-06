@@ -35,7 +35,9 @@ export default class Backend {
     this.authenticate = (req: any, res: any, next: any) => {
       const token = req.headers.authorization
 
-      if (token == null) { return res.status(401).send({ err: 'Nicht authorisiert!' }) }
+      if (token == null) {
+        return res.status(401).send({ err: 'Nicht authorisiert!' })
+      }
       if (token === preSharedSecret && token !== '') {
         next()
       }
@@ -92,7 +94,7 @@ export default class Backend {
       res.status(200).send({ status: 'ok' })
     })
 
-    this.v1Router.post('/settings', this.authenticate, (req, res) => {})
+    this.v1Router.post('/settings', this.authenticate, () => {})
 
     this.app.listen(this.port, () => {
       this.logger.log('INFO', 'API listening on port ' + this.port)
