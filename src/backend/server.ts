@@ -17,7 +17,7 @@ export default class Backend {
   private readonly port: number;
   private readonly logger: ILogger;
   private readonly emitter: EventEmitter;
-  private readonly app: any;
+  private readonly app: Application;
   private readonly v1Router: Router;
   private readonly authenticate: (
     req: Request,
