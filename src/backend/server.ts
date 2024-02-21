@@ -1,9 +1,9 @@
 import express, {
   Router,
-  Application,
-  Request,
-  Response,
-  NextFunction,
+  type Application,
+  type Request,
+  type Response,
+  type NextFunction,
 } from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
