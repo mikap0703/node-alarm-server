@@ -32,7 +32,10 @@ export default class AlarmHandler {
   private readonly logger: ILogger
   private readonly emitter: EventEmitter
   private readonly alarmDB: Low<TalarmDB>
-  private readonly triggerAlarm: OmitThisParameter<(alarm: Alarm) => void>
+  private readonly triggerAlarm: OmitThisParameter<
+  (alarmFactory: IAlarmFactory) => void
+  >
+
   private mailHandler?: MailHandler
   private dmeHandler?: DMEHandler
   private readonly api: Divera
@@ -207,14 +210,14 @@ export default class AlarmHandler {
     switch (alarm.compare(prev)) {
       case AlarmCompareResult.UPDATE_ALARM:
         alarm.id(prev.export().id)
-        this.api.updateAlarm(alarm.export())
+        this.api.updateAlarm(alarm)
         this.logger.log(
           'INFO',
           `Alarm wird aktualisiert: ${this.logger.convertObject(alarm.data)}`
         )
         break
       case AlarmCompareResult.NEW_ALARM:
-        this.api.triggerAlarm(alarm.export())
+        this.api.triggerAlarm(alarm)
         this.logger.log(
           'INFO',
           `Alarm wird ausgelöst: ${this.logger.convertObject(alarm.data)}`
