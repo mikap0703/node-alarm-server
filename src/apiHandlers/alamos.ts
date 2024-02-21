@@ -1,12 +1,16 @@
 import apiHandler from './apiHandler.js'
-import { type Alarm } from '../types/Alarm.js'
+import { type Alarm, type IAlarmFactory } from '../types/Alarm.js'
 
 export default class AlamosHandler extends apiHandler {
-  triggerAlarm (alarm: Alarm): void {
+  triggerAlarm (alarmFactory: IAlarmFactory): void {
+    const alarm: Alarm = alarmFactory.export()
+    this.logger.log('INFO', this.logger.convertObject(alarm))
     this.logger.log('ERROR', 'Alamos Anbindung ist nicht implementiert')
   }
 
-  updateAlarm (a: Alarm): void {
+  updateAlarm (alarmFactory: IAlarmFactory): void {
+    const alarm: Alarm = alarmFactory.export()
+    this.logger.log('INFO', this.logger.convertObject(alarm))
     this.logger.log('ERROR', 'Alamos Anbindung ist nicht implementiert')
   }
 
