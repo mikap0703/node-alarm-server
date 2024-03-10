@@ -85,7 +85,7 @@ export default class Divera extends apiHandler {
 
     this.logger.log(
       'INFO',
-      `Alarm wird ausgelöst: ${this.logger.convertObject(alarm)}`
+      `Alarm wird aktualisiert: ${this.logger.convertObject(alarm)}`
     )
 
     axios
