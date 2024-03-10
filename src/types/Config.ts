@@ -1,7 +1,7 @@
 import { type Alarm } from './Alarm.js'
 
 export interface generalConfig {
-  api: 'Divera' | 'Alamos' | 'Mock'
+  api: 'Divera' | 'Alamos' | 'Telegram' | 'Mock'
   apiKey: string
   timeout: number
   serialDME: boolean

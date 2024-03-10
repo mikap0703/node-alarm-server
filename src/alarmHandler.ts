@@ -1,4 +1,3 @@
-import type Divera from './apiHandlers/divera.js'
 import DiveraHandler from './apiHandlers/divera.js'
 import AlamosHandler from './apiHandlers/alamos.js'
 import MailHandler from './mail/mailHandler.js'
@@ -18,6 +17,8 @@ import {
 import { v4 as uuidv4 } from 'uuid'
 import AlarmFactory from './alarmFactory.js'
 import MockApiHandler from './apiHandlers/mockApiHandler.js'
+import type ApiHandler from './apiHandlers/apiHandler.js'
+import TelegramHandler from './apiHandlers/telegram.js'
 
 interface TalarmDB {
   alarms: Alarm[]
@@ -38,7 +39,7 @@ export default class AlarmHandler {
 
   private mailHandler?: MailHandler
   private dmeHandler?: DMEHandler
-  private readonly api: Divera
+  private readonly api: ApiHandler
 
   constructor (
     config: config,
@@ -85,6 +86,13 @@ export default class AlarmHandler {
         break
       case 'Alamos':
         this.api = new AlamosHandler(
+          this.apiKey,
+          this.logger,
+          this.config.general
+        )
+        break
+      case 'Telegram':
+        this.api = new TelegramHandler(
           this.apiKey,
           this.logger,
           this.config.general
