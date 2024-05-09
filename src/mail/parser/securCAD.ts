@@ -57,6 +57,14 @@ export function securCADParser (
   alarm.city(tableData['PLZ / Ort:']?.[0] ?? '')
   alarm.addressInfo(tableData['Info:']?.[0] ?? '')
   alarm.utm(tableData['UTM - Koordinaten:']?.[0] ?? '')
+  const coordsText = tableData['Geopositionen:'] ?? []
+  const latText = coordsText?.[1].match(/\d+,\d+/)?.[0] ?? ''
+  const lonText = coordsText?.[0].match(/\d+,\d+/)?.[0] ?? ''
+
+  if (latText !== '' && lonText !== '') {
+    alarm.lon(parseFloat(latText.replace(',', '.')))
+    alarm.lat(parseFloat(lonText.replace(',', '.')))
+  }
 
   if (alarm.data.address.info !== '') {
     alarm.addToText('\n' + alarm.data.address.info)
@@ -64,6 +72,10 @@ export function securCADParser (
 
   if (alarm.data.address.utm !== '') {
     alarm.addToText('\n\n' + 'UTM: ' + alarm.data.address.utm)
+  }
+
+  if (alarm.data.address.coords.lat != null && alarm.data.address.coords.lon != null) {
+    alarm.addToText('\n\n' + 'Koordinaten: ' + alarm.data.address.coords.lat + ', ' + alarm.data.address.coords.lon)
   }
 
   // Einsatzvorlagen anwenden - Empfängergruppen und alarmierte Fahrzeuge

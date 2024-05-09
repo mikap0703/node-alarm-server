@@ -120,12 +120,16 @@ export default class AlarmFactory implements IAlarmFactory {
   }
 
   lat(lat: number): Alarm {
-    this.data.address.coords.lat = lat
+    if (!isNaN(lat)) {
+      this.data.address.coords.lat = lat
+    }
     return this.data;
   }
 
   lon(lon: number): Alarm {
-    this.data.address.coords.lon = lon
+    if (!isNaN(lon)) {
+      this.data.address.coords.lon = lon
+    }
     return this.data;
   }
 
