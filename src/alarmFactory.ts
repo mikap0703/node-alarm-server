@@ -26,7 +26,11 @@ export default class AlarmFactory implements IAlarmFactory {
         object: '',
         objectId: '',
         info: '',
-        utm: ''
+        utm: '',
+        coords: {
+          lat: null,
+          lon: null
+        }
       },
       groups: [],
       vehicles: [],
@@ -110,6 +114,21 @@ export default class AlarmFactory implements IAlarmFactory {
     return this.data
   }
 
+  utm (utmCoords: string): Alarm {
+    this.data.address.utm = utmCoords
+    return this.data
+  }
+
+  lat(lat: number): Alarm {
+    this.data.address.coords.lat = lat
+    return this.data;
+  }
+
+  lon(lon: number): Alarm {
+    this.data.address.coords.lon = lon
+    return this.data;
+  }
+
   object (object: string): Alarm {
     this.data.address.object = object
     return this.data
@@ -122,11 +141,6 @@ export default class AlarmFactory implements IAlarmFactory {
 
   addressInfo (info: string): Alarm {
     this.data.address.info = info
-    return this.data
-  }
-
-  utm (utmCoords: string): Alarm {
-    this.data.address.utm = utmCoords
     return this.data
   }
 

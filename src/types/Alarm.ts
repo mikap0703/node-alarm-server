@@ -5,6 +5,10 @@ export interface Address {
   objectId: string
   info: string
   utm: string
+  coords: {
+    lat: number | null
+    lon: number | null
+  }
 }
 
 export interface MailData {
@@ -45,6 +49,9 @@ export interface IAlarmFactory {
   address: (address: Address) => Alarm
   street: (street: string) => Alarm
   city: (city: string) => Alarm
+  utm: (utm: string) => Alarm
+  lat: (lat: number) => Alarm
+  lon: (lon: number) => Alarm
   object: (object: string) => Alarm
   objectId: (objectId: string) => Alarm
   addressInfo: (info: string) => Alarm
