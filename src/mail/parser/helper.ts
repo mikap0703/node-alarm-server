@@ -1,9 +1,12 @@
 import { JSDOM } from 'jsdom'
 
-export function extractTableData (html: string): Record<string, string[]> {
+
+export function extractTableData2 (html: string): Record<string, string[]> {
   const dom: JSDOM = new JSDOM(html)
   const tables = dom.window.document.getElementsByTagName('table')
   const result: Record<string, string[]> = {}
+
+  let key: string = ""
 
   for (let i: number = 0; i < tables.length; i++) {
     const table: HTMLTableElement = tables[i]
@@ -18,10 +21,15 @@ export function extractTableData (html: string): Record<string, string[]> {
         rowData.push(cell.innerHTML.replace(/(&\w+;)|([\r\n\t]+)/g, '').trim())
       }
 
-      const key: string | null = row.cells[0].textContent
-      if (key != null) {
-        result[key.trim()] = rowData
+      const newKey: string | null = row.cells[0].textContent
+      if (newKey != null && newKey.trim() != "") {
+        key = newKey.trim()
       }
+
+      if (result[key] == null) {
+        result[key] = []
+      }
+      result[key].push(...rowData)
     }
   }
   return result
