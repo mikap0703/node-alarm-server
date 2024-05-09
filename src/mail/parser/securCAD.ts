@@ -62,8 +62,8 @@ export function securCADParser (
   const lonText = coordsText?.[0].match(/\d+,\d+/)?.[0] ?? ''
 
   if (latText !== '' && lonText !== '') {
-    alarm.lon(parseFloat(latText.replace(',', '.')))
-    alarm.lat(parseFloat(lonText.replace(',', '.')))
+    alarm.lat(parseFloat(latText.replace(',', '.')))
+    alarm.lon(parseFloat(lonText.replace(',', '.')))
   }
 
   if (alarm.data.address.info !== '') {
@@ -81,7 +81,7 @@ export function securCADParser (
     alarm.addToText('\n\n' + 'Koordinaten: ' + lat + ', ' + lon)
 
     // todo: maybe move this to a general function
-    const link = `http://maps.apple.com/?q=${lon},${lat}`
+    const link = `http://maps.apple.com/?q=${lat},${lon}`
 
     alarm.addToText('\n' + link)
   }

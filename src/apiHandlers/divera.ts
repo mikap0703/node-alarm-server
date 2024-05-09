@@ -19,14 +19,18 @@ export default class Divera extends apiHandler {
     let desination = {
       destination: false,
       destination_lat: 0,
-      destination_lon: 0
+      destination_lng: 0,
+      lat: 0,
+      lng: 0
     }
 
     if (alarm.address.coords.lat && alarm.address.coords.lon) {
       desination = {
         destination: true,
         destination_lat: alarm.address.coords.lat,
-        destination_lon: alarm.address.coords.lon
+        destination_lng: alarm.address.coords.lon,
+        lat: alarm.address.coords.lat,
+        lng: alarm.address.coords.lon
       }
     }
 
@@ -42,6 +46,7 @@ export default class Divera extends apiHandler {
           priority: true,
           notification_type: '3', // Empfänger-Auswahl (1 = Ausgewählte Standorte (nur in der PRO-Version), 2 = Alle des Standortes, 3 = Ausgewählte Gruppen, 4 = Ausgewählte Benutzer)
           send_push: true,
+          private: true,
           title: alarm.title,
           text: alarm.text,
           address,
@@ -98,6 +103,24 @@ export default class Divera extends apiHandler {
       address = alarm.address.city
     }
 
+    let desination = {
+      destination: false,
+      destination_lat: 0,
+      destination_lng: 0,
+      lat: 0,
+      lng: 0
+    }
+
+    if (alarm.address.coords.lat && alarm.address.coords.lon) {
+      desination = {
+        destination: true,
+        destination_lat: alarm.address.coords.lat,
+        destination_lng: alarm.address.coords.lon,
+        lat: alarm.address.coords.lat,
+        lng: alarm.address.coords.lon
+      }
+    }
+
     this.logger.log(
       'INFO',
       `Alarm wird aktualisiert: ${this.logger.convertObject(alarm)}`
@@ -110,9 +133,11 @@ export default class Divera extends apiHandler {
           priority: true,
           notification_type: '3', // Empfänger-Auswahl (1 = Ausgewählte Standorte (nur in der PRO-Version), 2 = Alle des Standortes, 3 = Ausgewählte Gruppen, 4 = Ausgewählte Benutzer)
           send_push: true,
+          private: true,
           title: alarm.title,
           text: alarm.text,
           address,
+          ...desination,
           scene_object: alarm.address.object,
           group: alarm.groups,
           vehicle: alarm.vehicles
