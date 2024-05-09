@@ -1,7 +1,7 @@
 import { JSDOM } from 'jsdom'
 
 
-export function extractTableData2 (html: string): Record<string, string[]> {
+export function extractTableData (html: string): Record<string, string[]> {
   const dom: JSDOM = new JSDOM(html)
   const tables = dom.window.document.getElementsByTagName('table')
   const result: Record<string, string[]> = {}
