@@ -74,9 +74,18 @@ export function securCADParser (
     alarm.addToText('\n\n' + 'UTM: ' + alarm.data.address.utm)
   }
 
-  if (alarm.data.address.coords.lat != null && alarm.data.address.coords.lon != null) {
-    alarm.addToText('\n\n' + 'Koordinaten: ' + alarm.data.address.coords.lat + ', ' + alarm.data.address.coords.lon)
+  const lat = alarm.data.address.coords.lat
+  const lon = alarm.data.address.coords.lon
+
+  if (lat != null && lon != null) {
+    alarm.addToText('\n\n' + 'Koordinaten: ' + lat + ', ' + lon)
+
+    // todo: maybe move this to a general function
+    const link = `http://maps.apple.com/?q=${lon},${lat}`
+
+    alarm.addToText('\n' + link)
   }
+
 
   // Einsatzvorlagen anwenden - Empfängergruppen und alarmierte Fahrzeuge
   for (const keyword in alarmTemplateKeywords) {
