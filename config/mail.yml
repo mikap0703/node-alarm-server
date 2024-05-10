@@ -39,3 +39,7 @@ stichwoerter:
   B4: Brand 4
   VUP: VU mit Person
   VU: Verkehrsunfall
+
+# Alarmierte Einheiten, die ignoriert werden und nicht in den Alarmtext übernommen werden
+ignoreUnits:
+  - "FW Musterstadt Ersatzalarm"

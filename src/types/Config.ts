@@ -24,6 +24,7 @@ export interface mailConfig {
   alarmTemplateKeywords: Record<string, string>
   mailSchema: string
   stichwoerter: Record<string, string>
+  ignoreUnits: string[]
 
   [key: string]: any
 }
