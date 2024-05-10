@@ -32,6 +32,7 @@ export default class AlarmFactory implements IAlarmFactory {
           lon: null
         }
       },
+      units: [],
       groups: [],
       vehicles: [],
       members: [],
@@ -145,6 +146,11 @@ export default class AlarmFactory implements IAlarmFactory {
 
   addressInfo (info: string): Alarm {
     this.data.address.info = info
+    return this.data
+  }
+
+  addUnit (unit: string): Alarm {
+    this.data.units.push(unit)
     return this.data
   }
 

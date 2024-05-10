@@ -30,6 +30,7 @@ export interface Alarm {
   text: string
   time: number
   address: Address
+  units: string[]
   groups: string[]
   vehicles: string[]
   members: string[]
@@ -55,6 +56,7 @@ export interface IAlarmFactory {
   object: (object: string) => Alarm
   objectId: (objectId: string) => Alarm
   addressInfo: (info: string) => Alarm
+  addUnit: (unit: string) => Alarm
   groups: (groups: string[]) => Alarm
   vehicles: (vehicles: string[]) => Alarm
   members: (members: string[]) => Alarm
