@@ -86,10 +86,21 @@ export function securCADParser (
     alarm.addToText('\n' + link)
   }
 
+  const tableDataKeys = Object.keys(tableData)
+
+  const alarmUnitsStart = tableDataKeys.indexOf("Ressourcen") + 1
+  const alarmUnitsEnd = tableDataKeys.indexOf("siehe Pflichtmaßnahmen !") - 1
+
+  for (let i = alarmUnitsStart; i <= alarmUnitsEnd; i++) {
+    const key = tableDataKeys[i]
+    if (!mailConfig.ignoreUnits.includes(key)) {
+      alarm.addUnit(key)
+    }
+  }
 
   // Einsatzvorlagen anwenden - Empfängergruppen und alarmierte Fahrzeuge
   for (const keyword in alarmTemplateKeywords) {
-    if (tableData[keyword] != null) {
+    if (tableDataKeys.includes(keyword)) {
       // Keyword existiert in Alarm Mail
       const template = alarmTemplateKeywords[keyword]
       alarm.applyTemplate(alarmTemplates[template])
