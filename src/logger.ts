@@ -1,7 +1,7 @@
 import chalk from 'chalk'
 import path from 'path'
 
-type logType = 'INFO' | 'WARN' | 'ERROR'
+type logType = 'INFO' | 'WARN' | 'ERROR' | 'DEBUG'
 
 export interface ILogger {
   log: (type: logType, payload: string) => void
@@ -26,6 +26,9 @@ export default class Logger implements ILogger {
         break
       case 'ERROR':
         doLog = chalk.bold.red
+        break
+      case 'DEBUG':
+        doLog = chalk.bold.blue
         break
     }
     console.log(doLog(`[${type}] - ${payload}`))
