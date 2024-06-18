@@ -194,7 +194,6 @@ export default class AlarmFactory implements IAlarmFactory {
   }
 
   compare (compareToFactory: IAlarmFactory): AlarmCompareResult {
-    console.log('Vergleiche Alarm mit Alarm')
     const compareTo = compareToFactory.export()
     const thisAlarm = this.export()
 

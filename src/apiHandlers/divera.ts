@@ -34,11 +34,6 @@ export default class Divera extends apiHandler {
       }
     }
 
-    this.logger.log(
-      'INFO',
-      `Alarm wird ausgelöst: ${this.logger.convertObject(alarm)}`
-    )
-
     axios
       .post('https://app.divera247.com/api/v2/alarms', {
         accesskey: this.apikey,
@@ -120,11 +115,6 @@ export default class Divera extends apiHandler {
         lng: alarm.address.coords.lon
       }
     }
-
-    this.logger.log(
-      'INFO',
-      `Alarm wird aktualisiert: ${this.logger.convertObject(alarm)}`
-    )
 
     axios
       .put('https://app.divera247.com/api/v2/alarms/' + alarm.id, {

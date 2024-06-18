@@ -224,14 +224,14 @@ export default class AlarmHandler {
         alarm.id(prev.export().id)
         this.api.updateAlarm(alarm)
         this.logger.log(
-          'INFO',
+          'DEBUG',
           `Alarm wird aktualisiert: ${this.logger.convertObject(alarm.data)}`
         )
         break
       case AlarmCompareResult.NEW_ALARM:
         this.api.triggerAlarm(alarm)
         this.logger.log(
-          'INFO',
+          'DEBUG',
           `Alarm wird ausgelöst: ${this.logger.convertObject(alarm.data)}`
         )
         break
