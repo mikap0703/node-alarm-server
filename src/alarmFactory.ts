@@ -198,18 +198,20 @@ export default class AlarmFactory implements IAlarmFactory {
     const compareTo = compareToFactory.export()
     const thisAlarm = this.export()
 
+    if (compareTo.time <= 0) {
+        this.logger.log('INFO', 'Vergleichs-Alarm hat keinen Zeitstempel')
+        return AlarmCompareResult.NEW_ALARM
+    }
+
+    this.logger.log('INFO', `Alarm wird mit vorherigem Alarm (${compareTo.title + " - " + new Date(compareTo.time).toLocaleString('de-DE')}) verglichen`)
+
     // todo: toggle different comparing categories (disable comparing by time etc...)
     // compare by time difference
-    console.log(compareToFactory.export())
     const timestampDifference = Math.abs(thisAlarm.time - compareTo.time)
 
     // todo: add timestampDifference to config
     if (timestampDifference >= 7000) {
-      console.log(
-        'Alarm ist kein Duplikat - Zeitstempel zu unterschiedlich (' +
-          timestampDifference / 1000 +
-          ')'
-      )
+      this.logger.log('DEBUG', 'Alarm ist kein Duplikat - Zeitstempel zu unterschiedlich (' + timestampDifference / 1000 + ')');
       return AlarmCompareResult.NEW_ALARM
     }
 
