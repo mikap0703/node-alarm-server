@@ -76,7 +76,6 @@ export default class AlarmHandler {
 
     this.apiKey = this.config.general.apiKey
     switch (this.config.general.api) {
-      // TODO: Add Mock API Handler
       case 'Divera':
         this.api = new DiveraHandler(
           this.apiKey,
@@ -106,13 +105,18 @@ export default class AlarmHandler {
 
     this.triggerAlarm = this.api.triggerAlarm.bind(this.api)
 
-    this.timeout = 5000
-    this.logger.log(
-      'INFO',
-      `Timeout - Alarmhandler wird in ${
-        this.timeout / 1000
-      } Sekunden gestartet`
-    )
+    this.timeout = this.config.general.timeout
+
+    if (this.timeout > 0) {
+      this.logger.log(
+          'INFO',
+          `Timeout - Alarmhandler wird in ${
+              this.timeout / 1000
+          } Sekunden gestartet`
+      )
+    } else {
+      this.logger.log('INFO', 'Alarmhandler wird gestartet')
+    }
   }
 
   start (): void {
