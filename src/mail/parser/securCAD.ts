@@ -83,7 +83,7 @@ export function securCADParser (
     // todo: maybe move this to a general function
     const link = `http://maps.apple.com/?q=${lat},${lon}`
 
-    alarm.addToText('\n' + link)
+    alarm.addToText('\n\n' + link)
   }
 
   const tableDataKeys = Object.keys(tableData)
