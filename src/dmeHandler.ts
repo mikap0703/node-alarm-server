@@ -115,6 +115,8 @@ export default class DMEHandler {
     const ric = tempArray[1]
     const msg = tempArray[2]
 
+    if (!ric || !msg || tempArray.length !== 3) return false
+
     // extract the date and time components from the string
     // const [time, date] = dateString.split(' ')
     // const [hours, minutes] = time.split(':').map(Number)
@@ -136,9 +138,10 @@ export default class DMEHandler {
     if (template === '') {
       this.logger.log(
         'INFO',
-        `DME Alarm angekommen - RIC "${ric}" - kein AlarmTemplate gefunden!`
+        `DME Alarm angekommen - RIC "${ric}" - kein Alarm Template gefunden!`
       )
     } else {
+      this.logger.log('INFO', `Alarm Template für RIC ${ric} wird angewendet...`)
       alarm.applyTemplate(this.alarmTemplates[template])
     }
 

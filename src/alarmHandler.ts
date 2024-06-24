@@ -194,8 +194,11 @@ export default class AlarmHandler {
       this.emitter.on('dmeData', (data) => {
         if (this.dmeHandler !== undefined) {
           const stringContent: string = data.content.toString() ?? ''
-          console.log(stringContent)
-          this.dmeHandler.handleDMEData(stringContent)
+          let handleDMEresult = this.dmeHandler.handleDMEData(stringContent)
+          if (!handleDMEresult) {
+            this.logger.log("ERROR", "Fehler beim Auswerten der Nachricht:")
+            this.logger.log("ERROR", stringContent)
+          }
         }
       })
     }
