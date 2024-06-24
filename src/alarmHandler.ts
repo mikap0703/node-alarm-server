@@ -3,9 +3,6 @@ import AlamosHandler from './apiHandlers/alamos.js'
 import MailHandler from './mail/mailHandler.js'
 import DMEHandler from './dmeHandler.js'
 import axios from 'axios'
-import { Low } from 'lowdb'
-import { JSONFile } from 'lowdb/node'
-import { join } from 'path'
 import { type config } from './types/Config.js'
 import { type ILogger } from './logger.js'
 import { type EventEmitter } from 'node:events'
@@ -20,10 +17,6 @@ import MockApiHandler from './apiHandlers/mockApiHandler.js'
 import type ApiHandler from './apiHandlers/apiHandler.js'
 import TelegramHandler from './apiHandlers/telegram.js'
 
-interface TalarmDB {
-  alarms: Alarm[]
-}
-
 export default class AlarmHandler {
   prevAlarm: Alarm
   timeout: number
@@ -32,10 +25,6 @@ export default class AlarmHandler {
   private readonly config: config
   private readonly logger: ILogger
   private readonly emitter: EventEmitter
-  private readonly alarmDB: Low<TalarmDB>
-  private readonly triggerAlarm: OmitThisParameter<
-  (alarmFactory: IAlarmFactory) => void
-  >
 
   private mailHandler?: MailHandler
   private dmeHandler?: DMEHandler
@@ -50,12 +39,6 @@ export default class AlarmHandler {
     this.config = config
     this.logger = logger
     this.emitter = emitter
-
-    const file = join(dirname, 'src', 'db', 'alarms.json')
-    const defaultData: TalarmDB = { alarms: [] }
-
-    const adapter = new JSONFile<TalarmDB>(file)
-    this.alarmDB = new Low<TalarmDB>(adapter, defaultData)
 
     this.doTriggerAlarm = this.config.general.alarm
 
@@ -103,8 +86,6 @@ export default class AlarmHandler {
         break
     }
 
-    this.triggerAlarm = this.api.triggerAlarm.bind(this.api)
-
     this.timeout = this.config.general.timeout
 
     if (this.timeout > 0) {
@@ -124,17 +105,6 @@ export default class AlarmHandler {
       if (alarm instanceof AlarmFactory) {
         void this.handleAlarm(alarm).then((a: IAlarmFactory): void => {
           this.prevAlarm = a.export()
-
-          void this.alarmDB
-            .read()
-            .then(() => {
-              this.alarmDB.data.alarms.push(alarm.data)
-            })
-            .then(() => {
-              void this.alarmDB.write().then(() => {
-                this.logger.log('INFO', 'Alarm wurde gespeichert')
-              })
-            })
         })
       }
     })
